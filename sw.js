@@ -1,4 +1,4 @@
-const CACHE = "mario-growth-island-v3";
+const CACHE = "mario-growth-island-v4";
 const CORE = ["/", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png", "/silver-centaur-portrait.webp", "/silver-centaur-detail.webp"];
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(CORE)));
