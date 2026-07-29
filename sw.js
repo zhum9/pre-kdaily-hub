@@ -1,4 +1,4 @@
-const CACHE = "mario-growth-island-v6";
+const CACHE = "mario-growth-island-v7";
 const CORE = ["/", "/manifest.webmanifest", "/icon-192.png", "/icon-512.png", "/apple-touch-icon.png", "/apple-touch-icon-167.png", "/apple-touch-icon-152.png", "/silver-centaur-portrait.webp", "/silver-centaur-detail.webp"];
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(CORE)));
