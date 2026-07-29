@@ -1,0 +1,14 @@
+{
+  "name": "Mario成长岛｜幼小衔接每日工作台",
+  "short_name": "Mario成长岛",
+  "description": "Mario 每天学习、运动、劳动，陪小宠物一起长大。",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f1f8fd",
+  "theme_color": "#edf7ff",
+  "orientation": "any",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
