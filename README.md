@@ -36,11 +36,15 @@ npm run test:browser
 
 设备声音由浏览器 Web Speech API 提供，不发送题目或孩子录音到新的服务。首次自动播放被浏览器阻止时显示“重播读题”提示；切题、暂停或离开页面会取消旧播报，避免串音。缺少设备语音时明确提示，不假装播放成功。逻辑使用可注入的声音接口测试；模拟语音测试不能代替在实际设备听音。
 
-静态资源版本为v29，HTML、模块导入地址和Service Worker缓存列表同步更新，以便已安装的PWA刷新后获得新读题逻辑。
+静态资源版本为v30，HTML、模块导入地址和Service Worker缓存列表同步更新。
+
+## 分层轻奥探索
+
+思维探索现含间隔、移多补少、和差画图、等量代换、有条件枚举、网格路线、排除逻辑7个主题，每主题“起步/进阶/挑战”3层，可直接选层。每层有例题、分步讲解与3道不同练习，保留自动播报。原5个基础活动移入数学小课堂，历史ID与记录保留。详见[课程调整说明](docs/enrichment-course.md)。
 
 ## 发布课程更新
 
-1. 在 `content/` 新增 `catalog-<版本>.json`，沿用 schemaVersion 1；保持已有知识点 ID 的含义稳定。
+1. 在 `content/` 新增 `catalog-<版本>.json`，沿用 schemaVersion 1；保持已有知识点 ID 的含义稳定。当前默认包为 `catalog-2026.11.01-thinking.json`。
 2. 查证来源，核对题目与解释；更新 `version`、`checkedAt` 与审查说明。规则校验不能替代教师审题。
 3. 运行 `npm run content:build -- catalog-<版本>.json` 生成 SHA-256 清单，再运行测试。
 4. 随网站发布内容包与 `content/manifest.json`。如更改首次离线安装的基础课程包，也需更新 `sw.js` 的 CORE 列表及缓存版本。

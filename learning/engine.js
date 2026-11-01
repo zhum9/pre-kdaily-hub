@@ -1,4 +1,5 @@
 // Education decisions are independent of the legacy reward and check-in system.
+import { THINKING_TEMPLATES, makeThinkingItem } from "./thinking.js?v=30";
 export const TEMPLATE_IDS = [
   "count",
   "compare",
@@ -18,6 +19,7 @@ export const TEMPLATE_IDS = [
   "paths",
   "balance",
   "english",
+  ...THINKING_TEMPLATES,
 ];
 export const SUBJECTS = ["math", "english", "thinking"];
 export const DEFAULT_PROFILE = {
@@ -121,6 +123,14 @@ export function validateCatalog(catalog) {
       (!Number.isInteger(s.max) || s.max < 5 || s.max > 100)
     )
       throw Error("数值范围不合法");
+    if (
+      s.level !== undefined &&
+      (![1, 2, 3].includes(s.level) ||
+        !s.topicId ||
+        !s.levelTitle ||
+        !THINKING_TEMPLATES.includes(s.template))
+    )
+      throw Error("轻奥层级不合法");
     ids.add(s.id);
   }
   const visiting = new Set(),
@@ -180,7 +190,12 @@ export function availability(skill, catalog, state) {
     school = catalog.skills.find((s) => s.id === state.profile.schoolSkill);
   if (skill.term <= term) {
     // Thinking and English have their own prerequisite chains, independent of the maths textbook.
-    if (skill.subject === "math" && school && skill.order > school.order)
+    if (
+      skill.subject === "math" &&
+      skill.track !== "foundation" &&
+      school &&
+      skill.order > school.order
+    )
       return { allowed: false, reason: "尚未到课堂进度，可在家长设置中调整" };
     return {
       allowed: true,
@@ -203,7 +218,10 @@ export function availability(skill, catalog, state) {
 export function plan(subject, catalog, state, today = localDay()) {
   const eligible = catalog.skills
     .filter(
-      (s) => s.subject === subject && availability(s, catalog, state).allowed,
+      (s) =>
+        s.subject === subject &&
+        s.track !== "foundation" &&
+        availability(s, catalog, state).allowed,
     )
     .sort((a, b) => a.order - b.order);
   const due = eligible.filter((s) => mastery(s.id, state.attempts, today).due);
@@ -212,12 +230,23 @@ export function plan(subject, catalog, state, today = localDay()) {
       (s) => mastery(s.id, state.attempts, today).status !== "secure",
     ) || eligible[0];
   const school = eligible.find((s) => s.id === state.profile.schoolSkill);
-  const target =
+  let target =
     subject === "math" &&
     school &&
     mastery(school.id, state.attempts, today).status !== "secure"
       ? school
       : current;
+  if (subject === "thinking") {
+    const chosen = eligible.find((s) => s.id === state.profile.thinkingSkill);
+    if (chosen)
+      target =
+        mastery(chosen.id, state.attempts, today).status === "secure"
+          ? eligible.find(
+              (s) =>
+                s.topicId === chosen.topicId && s.level === chosen.level + 1,
+            ) || chosen
+          : chosen;
+  }
   const preview = eligible.find((s) => availability(s, catalog, state).preview);
   const foundation = target?.prerequisites
     .map((id) => eligible.find((s) => s.id === id))
@@ -237,15 +266,45 @@ export function plan(subject, catalog, state, today = localDay()) {
   return {
     subject,
     selected,
-    reason: due.length
-      ? "先复习到期知识，再练课堂内容"
-      : "从当前水平开始，做会一小步",
+    reason:
+      subject === "thinking"
+        ? due.length
+          ? "先回顾方法，再选一层挑战"
+          : "同一主题三层可选，已会基础可直接进阶"
+        : due.length
+          ? "先复习到期知识，再练课堂内容"
+          : "从当前水平开始，做会一小步",
     today,
   };
 }
 export function makeItem(skill, seed, index = 0) {
   const rng = random(`${seed}:${skill.id}:${index}`),
     int = (a, b) => a + Math.floor(rng() * (b - a + 1));
+  const enrichment = makeThinkingItem(skill, rng, index);
+  if (enrichment) {
+    const model = enrichment.model;
+    if (model.type === "sumdiff")
+      enrichment.diagram = {
+        type: "bars",
+        extras: [model.difference, 0],
+        names: ["🐰 小兔", "🐻 小熊"],
+        sum: model.sum,
+      };
+    if (model.type === "sumdiff-three")
+      enrichment.diagram = {
+        type: "bars",
+        extras: [model.d1, 0, model.d2],
+        names: ["🐰 小兔", "🐻 小熊", "🐱 小猫"],
+        sum: model.sum,
+      };
+    const id = `${skill.id}:${hash(JSON.stringify({ prompt: enrichment.prompt, answer: enrichment.answer, diagram: enrichment.diagram, choices: enrichment.choices })).toString(36)}`;
+    return {
+      ...enrichment,
+      id,
+      skillId: skill.id,
+      catalogVersion: skill.catalogVersion,
+    };
+  }
   const max = skill.max || 10;
   let a,
     b,
@@ -537,6 +596,9 @@ export function makeSession(
     seen = new Set(
       state.attempts.filter((a) => a.day === day).map((a) => a.itemId),
     );
+  if (subject === "thinking")
+    for (const skill of selected)
+      seen.add(makeItem(skill, "worked-example:" + catalog.version, 0).id);
   const serial = Object.values(state.sessions).filter(
     (s) => s.subject === subject && s.day === day,
   ).length;

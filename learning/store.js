@@ -1,4 +1,4 @@
-import { DEFAULT_PROFILE, validateCatalog } from "./engine.js?v=29";
+import { DEFAULT_PROFILE, validateCatalog } from "./engine.js?v=30";
 export const BACKUP_FORMAT = "mario-learning-backup";
 const fresh = () => ({
   schemaVersion: 1,
@@ -265,6 +265,23 @@ export async function refreshCatalog(fetcher = fetch) {
     if (catalog.version !== manifest.version) throw Error("内容版本不一致");
     await update((s) => {
       s.catalog = catalog;
+      // Keep old evidence and immutable question snapshots, but do not resume
+      // an old foundation session as the new enrichment course's first lesson.
+      for (const session of Object.values(s.sessions))
+        if (
+          session.subject === "thinking" &&
+          !session.finished &&
+          session.items.length &&
+          session.items.every(
+            (item) =>
+              catalog.skills.find((skill) => skill.id === item.skillId)
+                ?.track === "foundation",
+          )
+        ) {
+          session.archived = true;
+          session.archiveReason =
+            "原思维基础活动已移入数学小课堂，历史题目与作答仍保留";
+        }
     });
     return { updated: true, catalog };
   } catch (error) {

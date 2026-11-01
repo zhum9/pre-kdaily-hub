@@ -15,7 +15,7 @@ import {
 } from "../learning/engine.js";
 const catalog = JSON.parse(
   await readFile(
-    new URL("../content/catalog-2026.11.01.json", import.meta.url),
+    new URL("../content/catalog-2026.11.01-thinking.json", import.meta.url),
   ),
 );
 const initial = () => ({
@@ -51,7 +51,7 @@ test("rejects unknown generators, missing prerequisites and dependency cycles", 
     assert.throws(() => validateCatalog(c));
   }
 });
-test("generated problems have valid answers, bounded arithmetic and unique, solvable choices across 12,000 variants", () => {
+test("generated problems have valid answers, bounded arithmetic and unique, solvable choices across 22,500 variants", () => {
   for (const skill of catalog.skills)
     for (let i = 0; i < 500; i++) {
       const item = makeItem(skill, "property-seed-" + i, i);
