@@ -85,8 +85,8 @@ test("content upgrade archives unfinished old foundation sessions without deleti
   await page.goto("/");
   await expect(page.getByText("今天，走好自己的这一小步")).toBeVisible();
   const original = await page.evaluate(async () => {
-    const store = await import("/learning/store.js?v=30");
-    const engine = await import("/learning/engine.js?v=30");
+    const store = await import("/learning/store.js?v=31");
+    const engine = await import("/learning/engine.js?v=31");
     const old = await (await fetch("/content/catalog-2026.11.01.json")).json();
     const item = engine.makeItem(
       old.skills.find((s) => s.id === "t-pattern"),
@@ -122,10 +122,10 @@ test("content upgrade archives unfinished old foundation sessions without deleti
   await open(page, "思维探索");
   await expect(page.locator(".edu-levels button")).toHaveCount(21);
   const state = await page.evaluate(async () => {
-    const s = await import("/learning/store.js?v=30");
+    const s = await import("/learning/store.js?v=31");
     return s.getSnapshot();
   });
-  expect(state.catalog.version).toBe("2026.11.01.2");
+  expect(state.catalog.version).toBe("2026.11.01.3");
   expect(state.sessions["old-foundation"].archived).toBe(true);
   expect(state.sessions["old-foundation"].items[0]).toEqual(original);
   expect(state.attempts.some((a) => a.id === "preserved-old-evidence")).toBe(

@@ -6,14 +6,20 @@ import {
   makeSession,
   makeItem,
   isCorrect,
-} from "./engine.js?v=30";
-import * as store from "./store.js?v=30";
+} from "./engine.js?v=31";
+import * as store from "./store.js?v=31";
+import { createSciencePage } from "../science/view.js?v=31";
+import {
+  GRADE_NAMES,
+  learningContext,
+  validateProgression,
+} from "./profile.js?v=31";
 import {
   createSpeechReader,
   questionSpeech,
   spokenText,
   speechErrorMessage,
-} from "./audio.js?v=30";
+} from "./audio.js?v=31";
 const labels = {
     math: "数学小课堂",
     english: "英语启蒙",
@@ -33,6 +39,7 @@ const HABITS = [
 let bootstrap;
 export function createLearningComponents(React) {
   const h = React.createElement;
+  const SciencePage = createSciencePage(React);
   function useLearning() {
     const state = React.useSyncExternalStore(
         store.subscribe,
@@ -87,7 +94,8 @@ export function createLearningComponents(React) {
           Heading,
           {
             title: "今天，走好自己的这一小步",
-            kicker: "一年级 · 理解 / 习惯 / 好奇心",
+            kicker:
+              learningContext(state.profile).label + " · 理解 / 习惯 / 好奇心",
           },
           h("p", null, "按学习记录安排复习与新练习，做完一小轮就可以休息。"),
         ),
@@ -125,7 +133,7 @@ export function createLearningComponents(React) {
                   ? "6题左右 · 看图、计算、讲思路"
                   : subject === "english"
                     ? "短时听说 · 生活中用一次"
-                    : "七个主题 · 起步、进阶、挑战",
+                    : "分层主题 · 起步、进阶、挑战",
               ),
               h("em", null, p.reason + " →"),
             );
@@ -151,21 +159,13 @@ export function createLearningComponents(React) {
         "section",
         { className: "edu-card" },
         h("h3", null, "还想探索一点？"),
-        h(
-          "p",
-          null,
-          "按今天的精力选一项，读一读、动一动，或看看一起长大的伙伴。",
-        ),
+        h("p", null, "按今天的精力选一项，观察、阅读，或看看一起长大的伙伴。"),
         h(
           "div",
           { className: "edu-resource-grid" },
           ...[
-            ["pinyin", "🔤", "拼音练习"],
-            ["hanzi", "字", "认识生字"],
-            ["poem", "📜", "古诗朗读"],
+            ["chinese", "📖", "语文阅读"],
             ["science", "🔭", "好奇小科学"],
-            ["sport", "🤸", "运动小活动"],
-            ["games", "🧩", "益智小游戏"],
             ["pet", "♞", "宠物伙伴"],
             ["calendar", "📅", "成长日历"],
           ].map(([id, icon, title]) =>
@@ -203,7 +203,22 @@ export function createLearningComponents(React) {
             "div",
             { className: "edu-roadmap" },
             ...catalog.skills
-              .filter((s) => s.subject === subject)
+              .filter(
+                (s) =>
+                  s.subject === subject &&
+                  (subject === "math"
+                    ? (s.grade || 1) === learningContext(state.profile).grade ||
+                      (state.profile.preview &&
+                        (s.grade || 1) ===
+                          learningContext(state.profile).grade + 1)
+                    : subject === "thinking"
+                      ? learningContext(state.profile).grade <=
+                          (s.maxGrade || 6) &&
+                        learningContext(state.profile).grade >=
+                          (s.minGrade || 1)
+                      : (s.englishLevel || 1) <=
+                        (state.profile.englishLevel || 1)),
+              )
               .map((s) => {
                 const m = mastery(s.id, state.attempts),
                   a = availability(s, catalog, state);
@@ -220,9 +235,12 @@ export function createLearningComponents(React) {
                         ? `轻奥第${s.level}层 · ${s.levelTitle}`
                         : s.track === "foundation"
                           ? "数学思维基础"
-                          : s.term === 2
-                            ? "下学期方向 · 按掌握开放"
-                            : "本阶段主题",
+                          : (s.grade || 1) >
+                              learningContext(state.profile).grade
+                            ? GRADE_NAMES[s.grade] + " · 相邻年级拓展"
+                            : s.term === 2
+                              ? "下学期方向 · 按掌握开放"
+                              : "本阶段主题",
                     ),
                     h("h4", null, s.title),
                     h("p", null, s.goal),
@@ -289,6 +307,38 @@ export function createLearningComponents(React) {
     );
   }
   function PuzzleDiagram({ diagram }) {
+    if (diagram?.type === "square-count") {
+      const cells = [];
+      for (let y = 0; y < diagram.rows; y++)
+        for (let x = 0; x < diagram.columns; x++)
+          if (!(diagram.missingCorner && x === 0 && y === 0))
+            cells.push(
+              h("rect", {
+                key: `${x}-${y}`,
+                x: x * 42 + 2,
+                y: y * 42 + 2,
+                width: 42,
+                height: 42,
+                fill: "#f0f7f4",
+                stroke: "#59877f",
+                strokeWidth: 2,
+              }),
+            );
+      return h(
+        "figure",
+        { className: "edu-grid-puzzle" },
+        h(
+          "svg",
+          {
+            viewBox: `0 0 ${diagram.columns * 42 + 4} ${diagram.rows * 42 + 4}`,
+            role: "img",
+            "aria-label": `${diagram.columns}列${diagram.rows}行方格${diagram.missingCorner ? "，左上角缺少一格" : ""}`,
+            style: { maxWidth: 250 },
+          },
+          ...cells,
+        ),
+      );
+    }
     if (
       diagram?.type === "bars" &&
       Array.isArray(diagram.extras) &&
@@ -442,7 +492,12 @@ export function createLearningComponents(React) {
   }
   function ThinkingHub({ state, onPractice, onNavigate }) {
     const skills = state.catalog.skills.filter(
-        (s) => s.subject === "thinking" && s.topicId && s.level,
+        (s) =>
+          s.subject === "thinking" &&
+          s.topicId &&
+          s.level &&
+          learningContext(state.profile).grade >= (s.minGrade || 1) &&
+          learningContext(state.profile).grade <= (s.maxGrade || 6),
       ),
       topics = [...new Set(skills.map((s) => s.topicId))],
       recommended = plan("thinking", state.catalog, state).selected[0];
@@ -464,7 +519,7 @@ export function createLearningComponents(React) {
       h(
         Heading,
         {
-          title: "一年级轻奥探索",
+          title: GRADE_NAMES[learningContext(state.profile).grade] + "轻奥探索",
           kicker: "先画图，再推理；同一主题，逐层深入",
         },
         h(
@@ -553,6 +608,13 @@ export function createLearningComponents(React) {
                 s.subject === subject &&
                 !s.archived &&
                 !s.finished &&
+                (subject === "english"
+                  ? (s.profileContext?.englishLevel || 1) ===
+                    (state.profile.englishLevel || 1)
+                  : (s.profileContext?.grade || 1) ===
+                      learningContext(state.profile).grade &&
+                    (s.profileContext?.term || 1) ===
+                      learningContext(state.profile).term) &&
                 s.preferredId === (preferred || null),
             )
             .at(-1)?.id,
@@ -1179,10 +1241,15 @@ export function createLearningComponents(React) {
         state.profile.edition,
         state.profile.term,
         state.profile.schoolSkill,
+        state.profile.progressionMode,
+        state.profile.entryYear,
+        state.profile.grade,
+        state.profile.englishLevel,
       ],
     );
     const save = async () => {
       try {
+        validateProgression(profile);
         await store.update((s) => {
           s.profile = {
             ...s.profile,
@@ -1246,7 +1313,8 @@ export function createLearningComponents(React) {
       (s) =>
         s.subject === "math" &&
         s.track !== "foundation" &&
-        s.term <= profile.term,
+        (s.grade || 1) === learningContext(profile).grade &&
+        s.term <= learningContext(profile).term,
     );
     return h(
       "div",
@@ -1263,7 +1331,67 @@ export function createLearningComponents(React) {
       h(
         "section",
         { className: "edu-card edu-settings" },
-        h("h3", null, "一年级学习档案"),
+        h("h3", null, "随孩子成长的学习档案"),
+        h(
+          "label",
+          null,
+          "年级安排方式",
+          h(
+            "select",
+            {
+              value: profile.progressionMode || "auto",
+              "aria-label": "年级安排方式",
+              onChange: (e) =>
+                setProfile({ ...profile, progressionMode: e.target.value }),
+            },
+            h("option", { value: "auto" }, "自动随入学年份推算"),
+            h("option", { value: "manual" }, "家长手动指定年级与学期"),
+          ),
+        ),
+        profile.progressionMode !== "manual"
+          ? h(
+              "label",
+              null,
+              "一年级入学年份（9月入学）",
+              h("input", {
+                type: "number",
+                min: 2000,
+                max: 2100,
+                value: profile.entryYear ?? 2026,
+                "aria-label": "一年级入学年份（9月入学）",
+                onChange: (e) =>
+                  setProfile({ ...profile, entryYear: Number(e.target.value) }),
+              }),
+            )
+          : h(
+              "label",
+              null,
+              "当前年级",
+              h(
+                "select",
+                {
+                  value: profile.grade || 1,
+                  "aria-label": "当前年级",
+                  onChange: (e) =>
+                    setProfile({
+                      ...profile,
+                      grade: Number(e.target.value),
+                      schoolSkill: "auto",
+                    }),
+                },
+                ...GRADE_NAMES.slice(1).map((name, i) =>
+                  h("option", { value: i + 1, key: name }, name),
+                ),
+              ),
+            ),
+        h(
+          "p",
+          { className: "edu-note", role: "status" },
+          "当前安排：" +
+            learningContext(profile).label +
+            "。自动模式在每年7月进入下一年级暑期预习，9月正式开学，2月按下学期安排；日期仅为可校准的推荐规则，实际校历以学校为准。",
+        ),
+        h("p", { className: "edu-note" }, state.catalog.coverage),
         h("p", null, "数学 / 语文出版信息：江苏凤凰教育出版社（家长提供）"),
         h("p", { className: "edu-note" }, state.catalog.textbookNote),
         h(
@@ -1284,7 +1412,8 @@ export function createLearningComponents(React) {
           h(
             "select",
             {
-              value: profile.term,
+              value: learningContext(profile).term,
+              disabled: profile.progressionMode !== "manual",
               onChange: (e) => {
                 const term = Number(e.target.value);
                 setProfile({
@@ -1300,8 +1429,8 @@ export function createLearningComponents(React) {
                 });
               },
             },
-            h("option", { value: 1 }, "一年级上学期"),
-            h("option", { value: 2 }, "一年级下学期"),
+            h("option", { value: 1 }, "上学期"),
+            h("option", { value: 2 }, "下学期"),
           ),
         ),
         h(
@@ -1311,19 +1440,42 @@ export function createLearningComponents(React) {
           h(
             "select",
             {
-              value: profile.schoolSkill,
+              value: math.some((s) => s.id === profile.schoolSkill)
+                ? profile.schoolSkill
+                : "auto",
               onChange: (e) =>
                 setProfile({ ...profile, schoolSkill: e.target.value }),
             },
+            h("option", { value: "auto" }, "按当前年级推荐，保留薄弱点复习"),
             ...math.map((s) =>
               h("option", { value: s.id, key: s.id }, s.title),
             ),
           ),
         ),
         h(
+          "label",
+          null,
+          "英语实际起点（独立于年级）",
+          h(
+            "select",
+            {
+              value: profile.englishLevel || 1,
+              "aria-label": "英语实际起点（独立于年级）",
+              onChange: (e) =>
+                setProfile({
+                  ...profile,
+                  englishLevel: Number(e.target.value),
+                }),
+            },
+            h("option", { value: 1 }, "零基础：先听懂、指认与模仿"),
+            h("option", { value: 2 }, "能听懂常用词：生活短句与回应"),
+            h("option", { value: 3 }, "能简单交流：多步指令与表达"),
+          ),
+        ),
+        h(
           "p",
           null,
-          "英语：尚未开课，按零基础视听说启蒙；可以在成长路线中换主题。",
+          "升级年级不自动跳过英语基础。每次听说后用实物、动作或一次真实交流验证理解。",
         ),
         h(
           "label",
@@ -1334,7 +1486,7 @@ export function createLearningComponents(React) {
             onChange: (e) =>
               setProfile({ ...profile, preview: e.target.checked }),
           }),
-          "愿意尝试下学期内容（仍需满足每个主题的前置掌握证据）",
+          "愿意尝试下一学期 / 相邻年级拓展（有前置条件的主题仍需掌握证据）",
         ),
         h(
           "label",
@@ -1448,6 +1600,63 @@ export function createLearningComponents(React) {
       setPreferred(null);
       setPracticeSubject(null);
     }, [section]);
+    if (section === "science") return h(SciencePage, { onComplete });
+    if (section === "chinese") {
+      const context = learningContext(state.profile);
+      const task = [
+        "",
+        "听一段，再说说谁做了什么；认字不熟可以让家长读。",
+        "读一小段，按先后顺序复述，找出一句支持你想法的话。",
+        "分段说要点，区分文章写出的事实和自己的推测。",
+        "用文中的两处线索解释人物想法，比较不同理解。",
+        "概括中心意思，找证据，解释段落怎样支持作者表达。",
+        "比较两篇同主题材料的观点与证据，提出尚未解决的问题。",
+      ][context.grade];
+      return h(
+        "div",
+        { className: "edu-page" },
+        h(
+          Heading,
+          {
+            title: "语文阅读",
+            kicker: context.label + " · 少而精，读懂再表达",
+          },
+          h("p", null, "以学校课本或家里现有图书为主，朗读资源按需要选用。"),
+        ),
+        h(
+          "section",
+          { className: "edu-card" },
+          h("h3", null, "今天只练一个阅读动作"),
+          h("p", null, task),
+          h(
+            "p",
+            null,
+            "家长先听孩子自己的解释，再追问“你从哪里知道的？”；不以阅读速度打分。",
+          ),
+        ),
+        h(
+          "section",
+          { className: "edu-card" },
+          h("h3", null, "朗读与基础复习资源"),
+          h(
+            "p",
+            null,
+            "以下沿用原有素材，尚未与教材版次逐课对应；拼音、生字适合按需复习，不作为高年级主课。",
+          ),
+          h(
+            "div",
+            { className: "edu-resource-grid" },
+            ...[
+              ["pinyin", "拼音复习"],
+              ["hanzi", "生字复习"],
+              ["poem", "古诗朗读"],
+            ].map(([id, label]) =>
+              btn(label, () => onNavigate(id), { key: id }),
+            ),
+          ),
+        ),
+      );
+    }
     if (!state.catalog) return h(Loading, { error });
     async function choose(s) {
       if (!s) return;

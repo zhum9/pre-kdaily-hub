@@ -29,6 +29,10 @@ test("equations, missing numbers and repeated-picture inputs become spoken quest
   assert.ok(!text.includes("secret"));
   assert.ok(!text.includes("□"));
   assert.equal(
+    spokenText("3/5 × 2/7，25%，6∶4，12 ÷ 3"),
+    "5分之3 乘 7分之2，百分之25，6比4，12 除以 3",
+  );
+  assert.equal(
     spokenText("□ + 4 = 9，盒子里藏着几？"),
     "几 加 4 等于 9，盒子里藏着几？",
   );

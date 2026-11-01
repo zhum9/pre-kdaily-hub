@@ -37,7 +37,7 @@ test("published manifest matches the validated content exactly", async () => {
     createHash("sha256").update(bytes).digest("hex"),
     manifest.sha256,
   );
-  assert.equal(manifest.version, catalog.version);
+  assert.equal(manifest.version, validateCatalog(JSON.parse(bytes)).version);
 });
 test("rejects unknown generators, missing prerequisites and dependency cycles", () => {
   for (const mutation of [
