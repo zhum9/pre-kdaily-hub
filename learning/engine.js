@@ -1,5 +1,10 @@
 // Education decisions are independent of the legacy reward and check-in system.
-import { THINKING_TEMPLATES, makeThinkingItem } from "./thinking.js?v=30";
+import { THINKING_TEMPLATES, makeThinkingItem } from "./thinking.js?v=31";
+import {
+  PROGRESSION_TEMPLATES,
+  makeProgressionItem,
+} from "./progression.js?v=31";
+import { PROGRESSION_DEFAULTS, effectiveProfile } from "./profile.js?v=31";
 export const TEMPLATE_IDS = [
   "count",
   "compare",
@@ -20,9 +25,11 @@ export const TEMPLATE_IDS = [
   "balance",
   "english",
   ...THINKING_TEMPLATES,
+  ...PROGRESSION_TEMPLATES,
 ];
 export const SUBJECTS = ["math", "english", "thinking"];
 export const DEFAULT_PROFILE = {
+  ...PROGRESSION_DEFAULTS,
   grade: 1,
   term: 1,
   publisher: "江苏凤凰教育出版社",
@@ -128,9 +135,22 @@ export function validateCatalog(catalog) {
       (![1, 2, 3].includes(s.level) ||
         !s.topicId ||
         !s.levelTitle ||
-        !THINKING_TEMPLATES.includes(s.template))
+        ![
+          ...THINKING_TEMPLATES,
+          ...PROGRESSION_TEMPLATES.filter((id) => id.startsWith("think-")),
+        ].includes(s.template))
     )
       throw Error("轻奥层级不合法");
+    if (
+      ["grade", "minGrade", "maxGrade"].some(
+        (key) =>
+          s[key] !== undefined &&
+          (!Number.isInteger(s[key]) || s[key] < 1 || s[key] > 6),
+      ) ||
+      (s.minGrade && s.maxGrade && s.minGrade > s.maxGrade) ||
+      (s.englishLevel !== undefined && ![1, 2, 3].includes(s.englishLevel))
+    )
+      throw Error("课程适用范围不合法");
     ids.add(s.id);
   }
   const visiting = new Set(),
@@ -185,14 +205,38 @@ export function mastery(skillId, attempts = [], today = localDay()) {
     last,
   };
 }
-export function availability(skill, catalog, state) {
-  const term = Number(state.profile.term),
-    school = catalog.skills.find((s) => s.id === state.profile.schoolSkill);
-  if (skill.term <= term) {
+export function availability(skill, catalog, state, today = localDay()) {
+  const profile = state.profile.progressionMode
+    ? effectiveProfile(state.profile, today)
+    : state.profile;
+  const grade = profile.grade || 1,
+    term = Number(profile.term),
+    skillGrade = skill.grade || 1;
+  const school = catalog.skills.find(
+    (s) => s.id === profile.schoolSkill && (s.grade || 1) === grade,
+  );
+  if (skill.subject === "english")
+    return (skill.englishLevel || 1) <= (profile.englishLevel || 1)
+      ? { allowed: true, preview: false }
+      : {
+          allowed: false,
+          reason: "请在家长设置调整英语实际起点，英语不随年级强制跳级",
+        };
+  if (skill.subject === "thinking") {
+    if (grade > (skill.maxGrade || 6))
+      return { allowed: false, reason: "低年级方法基础，可在复习路线查看" };
+    if (grade < (skill.minGrade || 1) && !profile.preview)
+      return { allowed: false, reason: "这是高学段拓展，可由家长开启进阶预习" };
+    return { allowed: true, preview: grade < (skill.minGrade || 1) };
+  }
+  if (skillGrade > grade + 1)
+    return { allowed: false, reason: "先学习当前年级与相邻阶段，不跨多级推送" };
+  if (skillGrade < grade || (skillGrade === grade && skill.term <= term)) {
     // Thinking and English have their own prerequisite chains, independent of the maths textbook.
     if (
       skill.subject === "math" &&
       skill.track !== "foundation" &&
+      skillGrade === grade &&
       school &&
       skill.order > school.order
     )
@@ -205,7 +249,7 @@ export function availability(skill, catalog, state) {
       ),
     };
   }
-  if (!state.profile.preview)
+  if (!profile.preview)
     return { allowed: false, reason: "下学期预习由家长开启" };
   if (
     skill.prerequisites.some(
@@ -216,20 +260,35 @@ export function availability(skill, catalog, state) {
   return { allowed: true, preview: true };
 }
 export function plan(subject, catalog, state, today = localDay()) {
+  const profile = state.profile.progressionMode
+    ? effectiveProfile(state.profile, today)
+    : state.profile;
   const eligible = catalog.skills
     .filter(
       (s) =>
         s.subject === subject &&
         s.track !== "foundation" &&
-        availability(s, catalog, state).allowed,
+        availability(s, catalog, state, today).allowed,
     )
     .sort((a, b) => a.order - b.order);
   const due = eligible.filter((s) => mastery(s.id, state.attempts, today).due);
+  const inStage = eligible.filter((s) =>
+    subject === "math"
+      ? (s.grade || 1) === (profile.grade || 1)
+      : subject === "english"
+        ? (s.englishLevel || 1) === (profile.englishLevel || 1)
+        : s.level === Math.min(3, Math.max(1, profile.grade || 1)),
+  );
   const current =
-    eligible.find(
+    inStage.find(
       (s) => mastery(s.id, state.attempts, today).status !== "secure",
-    ) || eligible[0];
-  const school = eligible.find((s) => s.id === state.profile.schoolSkill);
+    ) ||
+    inStage[0] ||
+    eligible[0];
+  const school = eligible.find(
+    (s) =>
+      s.id === profile.schoolSkill && (s.grade || 1) === (profile.grade || 1),
+  );
   let target =
     subject === "math" &&
     school &&
@@ -247,7 +306,11 @@ export function plan(subject, catalog, state, today = localDay()) {
             ) || chosen
           : chosen;
   }
-  const preview = eligible.find((s) => availability(s, catalog, state).preview);
+  const preview = eligible.find(
+    (s) =>
+      availability(s, catalog, state, today).preview &&
+      mastery(s.id, state.attempts, today).status !== "secure",
+  );
   const foundation = target?.prerequisites
     .map((id) => eligible.find((s) => s.id === id))
     .find((s) => s && mastery(s.id, state.attempts, today).status !== "secure");
@@ -280,7 +343,9 @@ export function plan(subject, catalog, state, today = localDay()) {
 export function makeItem(skill, seed, index = 0) {
   const rng = random(`${seed}:${skill.id}:${index}`),
     int = (a, b) => a + Math.floor(rng() * (b - a + 1));
-  const enrichment = makeThinkingItem(skill, rng, index);
+  const enrichment =
+    makeProgressionItem(skill, rng, index) ||
+    makeThinkingItem(skill, rng, index);
   if (enrichment) {
     const model = enrichment.model;
     if (model.type === "sumdiff")
@@ -588,7 +653,7 @@ export function makeSession(
       (s) => s.id === preferredId && s.subject === subject,
     );
   const selected =
-    preferred && availability(preferred, catalog, state).allowed
+    preferred && availability(preferred, catalog, state, day).allowed
       ? [preferred]
       : route.selected;
   const count = subject === "math" ? 6 : subject === "english" ? 4 : 3,
@@ -616,6 +681,18 @@ export function makeSession(
   }
   return {
     id: `${day}:${subject}:${serial}:${preferredId || "plan"}`,
+    profileContext: {
+      grade:
+        (state.profile.progressionMode
+          ? effectiveProfile(state.profile, day)
+          : state.profile
+        ).grade || 1,
+      term: (state.profile.progressionMode
+        ? effectiveProfile(state.profile, day)
+        : state.profile
+      ).term,
+      englishLevel: state.profile.englishLevel || 1,
+    },
     subject,
     day,
     items,

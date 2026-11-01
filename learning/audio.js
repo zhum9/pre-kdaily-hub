@@ -10,6 +10,11 @@ const pictureNames = {
 };
 export function spokenText(text) {
   return String(text)
+    .replace(/(\d+)\s*\/\s*(\d+)/g, "$2分之$1")
+    .replace(/(\d+)%/g, "百分之$1")
+    .replace(/×/g, "乘")
+    .replace(/÷/g, "除以")
+    .replace(/∶/g, "比")
     .replace(
       /(\d+)\s*([+−-])\s*(\d+)\s*=\s*□/g,
       (_, a, op, b) => `${a}${op === "+" ? "加" : "减"}${b}等于多少？`,

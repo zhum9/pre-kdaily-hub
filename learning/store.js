@@ -1,4 +1,6 @@
-import { DEFAULT_PROFILE, validateCatalog } from "./engine.js?v=30";
+import { DEFAULT_PROFILE, validateCatalog } from "./engine.js?v=31";
+import { emptyScience, validateScienceState } from "../science/engine.js?v=31";
+import { validateProgression } from "./profile.js?v=31";
 export const BACKUP_FORMAT = "mario-learning-backup";
 const fresh = () => ({
   schemaVersion: 1,
@@ -8,6 +10,7 @@ const fresh = () => ({
   habits: {},
   interests: [],
   catalog: null,
+  science: emptyScience(),
 });
 let db,
   memory = fresh(),
@@ -25,6 +28,14 @@ export function subscribe(fn) {
   return () => listeners.delete(fn);
 }
 function publish(value) {
+  const previous = value.profile;
+  value.profile = {
+    ...DEFAULT_PROFILE,
+    ...previous,
+    progressionMode:
+      previous.progressionMode || (previous.term === 2 ? "manual" : "auto"),
+  };
+  value.science ||= emptyScience();
   memory = value;
   listeners.forEach((fn) => fn());
 }
@@ -142,6 +153,7 @@ export function validateState(state) {
     state.attempts.length > 100000
   )
     throw Error("学习记录格式不正确");
+  validateProgression(state.profile);
   if (
     state.attempts.some(
       (a) =>
@@ -158,6 +170,7 @@ export function validateState(state) {
   )
     throw Error("作答记录不完整");
   if (state.catalog) validateCatalog(state.catalog);
+  if (state.science) validateScienceState(state.science);
   for (const session of Object.values(state.sessions))
     if (
       !session.id ||
@@ -189,7 +202,13 @@ export async function importBackup(input) {
   const incoming = validateState(input.state);
   await update((state) => {
     if (!state.profile.configuredAt)
-      state.profile = { ...DEFAULT_PROFILE, ...incoming.profile };
+      state.profile = {
+        ...DEFAULT_PROFILE,
+        ...incoming.profile,
+        progressionMode:
+          incoming.profile.progressionMode ||
+          (incoming.profile.term === 2 ? "manual" : "auto"),
+      };
     state.attempts = [
       ...new Map(
         [...incoming.attempts, ...state.attempts].map((a) => [a.id, a]),
@@ -210,6 +229,27 @@ export async function importBackup(input) {
       ).values(),
     ];
     if (!state.catalog && incoming.catalog) state.catalog = incoming.catalog;
+    if (incoming.science) {
+      state.science ||= emptyScience();
+      for (const [id, run] of Object.entries(incoming.science.sessions)) {
+        const local = state.science.sessions[id];
+        state.science.sessions[id] = local
+          ? {
+              ...run,
+              ...local,
+              answers: { ...run.answers, ...local.answers },
+              finishedAt: local.finishedAt || run.finishedAt,
+              prediction: local.prediction || run.prediction,
+            }
+          : run;
+      }
+      state.science.observations = {
+        ...incoming.science.observations,
+        ...state.science.observations,
+      };
+      if (!state.science.catalog)
+        state.science.catalog = incoming.science.catalog;
+    }
   });
   // Existing game progress wins. Import only absent legacy keys.
   let restored = 0;
