@@ -4,15 +4,16 @@ import {
   availability,
   plan,
   makeSession,
+  makeItem,
   isCorrect,
-} from "./engine.js?v=29";
-import * as store from "./store.js?v=29";
+} from "./engine.js?v=30";
+import * as store from "./store.js?v=30";
 import {
   createSpeechReader,
   questionSpeech,
   spokenText,
   speechErrorMessage,
-} from "./audio.js?v=29";
+} from "./audio.js?v=30";
 const labels = {
     math: "数学小课堂",
     english: "英语启蒙",
@@ -124,7 +125,7 @@ export function createLearningComponents(React) {
                   ? "6题左右 · 看图、计算、讲思路"
                   : subject === "english"
                     ? "短时听说 · 生活中用一次"
-                    : "3题左右 · 摆一摆、画一画",
+                    : "七个主题 · 起步、进阶、挑战",
               ),
               h("em", null, p.reason + " →"),
             );
@@ -215,7 +216,13 @@ export function createLearningComponents(React) {
                     h(
                       "small",
                       null,
-                      s.term === 2 ? "下学期方向 · 按掌握开放" : "本阶段主题",
+                      s.level
+                        ? `轻奥第${s.level}层 · ${s.levelTitle}`
+                        : s.track === "foundation"
+                          ? "数学思维基础"
+                          : s.term === 2
+                            ? "下学期方向 · 按掌握开放"
+                            : "本阶段主题",
                     ),
                     h("h4", null, s.title),
                     h("p", null, s.goal),
@@ -281,7 +288,260 @@ export function createLearningComponents(React) {
       h("small", null, "勾选记录的是生活习惯，不计作知识掌握。"),
     );
   }
-  function Practice({ subject, state, preferred, onComplete, onBack }) {
+  function PuzzleDiagram({ diagram }) {
+    if (
+      diagram?.type === "bars" &&
+      Array.isArray(diagram.extras) &&
+      diagram.extras.length <= 3
+    )
+      return h(
+        "figure",
+        { className: "edu-bars" },
+        ...diagram.extras.map((extra, i) =>
+          h(
+            "div",
+            { className: "edu-bar-row", key: i },
+            h("span", null, diagram.names[i]),
+            h("div", { className: "edu-bar-common" }, "?"),
+            extra > 0 && h("div", { className: "edu-bar-extra" }, `多${extra}`),
+          ),
+        ),
+        h(
+          "figcaption",
+          null,
+          `一共 ${diagram.sum} 颗 · 相同颜色表示相同的一份；示意图不按实际数量比例绘制。`,
+        ),
+      );
+    if (diagram?.type !== "grid") return null;
+    const columns = diagram.columns,
+      rows = diagram.rows;
+    if (
+      !Number.isInteger(columns) ||
+      !Number.isInteger(rows) ||
+      columns < 1 ||
+      rows < 1 ||
+      columns > 4 ||
+      rows > 4
+    )
+      return null;
+    const step = 54,
+      nodes = [];
+    for (let y = 0; y <= rows; y++)
+      for (let x = 0; x <= columns; x++) {
+        if (x < columns)
+          nodes.push(
+            h("line", {
+              key: `r${x}-${y}`,
+              x1: x * step,
+              y1: y * step,
+              x2: (x + 1) * step,
+              y2: y * step,
+              stroke: "#93b5bd",
+              strokeWidth: 3,
+            }),
+          );
+        if (y < rows)
+          nodes.push(
+            h("line", {
+              key: `d${x}-${y}`,
+              x1: x * step,
+              y1: y * step,
+              x2: x * step,
+              y2: (y + 1) * step,
+              stroke: "#93b5bd",
+              strokeWidth: 3,
+            }),
+          );
+        nodes.push(
+          h("circle", {
+            key: `p${x}-${y}`,
+            cx: x * step,
+            cy: y * step,
+            r: 4,
+            fill: "#4f8791",
+          }),
+        );
+      }
+    if (diagram.via)
+      nodes.push(
+        h(
+          "text",
+          {
+            key: "via",
+            x: diagram.via.x * step,
+            y: diagram.via.y * step + 7,
+            fill: "#2374c0",
+            fontSize: 30,
+            textAnchor: "middle",
+          },
+          "⚑",
+        ),
+      );
+    if (diagram.blocked)
+      nodes.push(
+        h(
+          "g",
+          { key: "blocked" },
+          h("circle", {
+            cx: diagram.blocked.x * step,
+            cy: diagram.blocked.y * step,
+            r: 12,
+            fill: "white",
+          }),
+          h(
+            "text",
+            {
+              x: diagram.blocked.x * step,
+              y: diagram.blocked.y * step + 9,
+              fill: "#c74c4c",
+              fontSize: 30,
+              textAnchor: "middle",
+            },
+            "×",
+          ),
+        ),
+      );
+    nodes.push(
+      h(
+        "text",
+        { key: "start", x: 0, y: 7, fontSize: 24, textAnchor: "middle" },
+        "🐰",
+      ),
+      h(
+        "text",
+        {
+          key: "end",
+          x: columns * step,
+          y: rows * step + 7,
+          fontSize: 24,
+          textAnchor: "middle",
+        },
+        "🏠",
+      ),
+    );
+    return h(
+      "figure",
+      { className: "edu-grid-puzzle" },
+      h(
+        "svg",
+        {
+          viewBox: `-25 -25 ${columns * step + 50} ${rows * step + 50}`,
+          role: "img",
+          "aria-label": `${columns}格宽、${rows}格高的路线图，从左上小兔到右下树屋${diagram.via ? "，须经过蓝旗交点" : ""}${diagram.blocked ? "，不能经过红叉交点" : ""}`,
+        },
+        ...nodes,
+      ),
+      h(
+        "figcaption",
+        null,
+        "🐰 起点 → 🏠 终点 · 只沿线向右或向下" +
+          (diagram.via ? " · 必经蓝旗" : "") +
+          (diagram.blocked ? " · 避开红叉" : ""),
+      ),
+    );
+  }
+  function ThinkingHub({ state, onPractice, onNavigate }) {
+    const skills = state.catalog.skills.filter(
+        (s) => s.subject === "thinking" && s.topicId && s.level,
+      ),
+      topics = [...new Set(skills.map((s) => s.topicId))],
+      recommended = plan("thinking", state.catalog, state).selected[0];
+    if (!skills.length)
+      return h(
+        "section",
+        { className: "edu-card" },
+        h("h3", null, "正在更新分层轻奥课程"),
+        h(
+          "p",
+          null,
+          "当前保存的是旧内容包，联网后会自动检查更新。也可以到家长设置检查课程更新。",
+        ),
+        btn("检查课程更新", () => onNavigate("learning-settings")),
+      );
+    return h(
+      "div",
+      null,
+      h(
+        Heading,
+        {
+          title: "一年级轻奥探索",
+          kicker: "先画图，再推理；同一主题，逐层深入",
+        },
+        h(
+          "p",
+          null,
+          "这次增加的是条件、关系和思考步骤。已经会基础，可以直接选进阶或挑战，不必先刷完整套起步题。",
+        ),
+      ),
+      h(
+        "div",
+        { className: "edu-thinking-guide" },
+        h("span", null, "1 起步 · 用图和实物理解方法"),
+        h("span", null, "2 进阶 · 增加条件，换角度思考"),
+        h("span", null, "3 挑战 · 联合条件，解释为什么"),
+      ),
+      recommended &&
+        h(
+          "aside",
+          { className: "edu-coach" },
+          h("b", null, "今天推荐的主题"),
+          h("p", null, recommended.title),
+          btn("继续推荐主题", () => onPractice(recommended)),
+        ),
+      h(
+        "div",
+        { className: "edu-topic-grid" },
+        ...topics.map((topicId) => {
+          const levels = skills
+              .filter((s) => s.topicId === topicId)
+              .sort((a, b) => a.level - b.level),
+            first = levels[0];
+          return h(
+            "article",
+            { className: "edu-card edu-topic", key: topicId },
+            h("span", { className: "edu-topic-icon" }, first.icon),
+            h("h3", null, first.topicTitle),
+            h("p", null, levels[2].goal),
+            h(
+              "div",
+              { className: "edu-levels" },
+              ...levels.map((s) => {
+                const m = mastery(s.id, state.attempts);
+                return btn(
+                  h(
+                    React.Fragment,
+                    null,
+                    h("b", null, `${s.level} ${s.levelTitle}`),
+                    h("small", null, s.title.split(" · ")[1]),
+                    h("em", null, statusLabel[m.status]),
+                  ),
+                  () => onPractice(s),
+                  {
+                    "aria-label": `${s.topicTitle} ${s.levelTitle}`,
+                    key: s.id,
+                    className: m.status === "secure" ? "secure" : "",
+                  },
+                );
+              }),
+            ),
+          );
+        }),
+      ),
+      h(
+        "p",
+        { className: "edu-note" },
+        "每层先看一道例题，再做3道不同变式。记录分层保存；换层不等于已经掌握。卡住可以用提示或退回上一层，不计时、不排名。原来的规律、排队等入门活动已归入数学小课堂的“数学思维基础”。",
+      ),
+    );
+  }
+  function Practice({
+    subject,
+    state,
+    preferred,
+    onComplete,
+    onBack,
+    onChoose,
+  }) {
     const today = localDay(),
       catalog = state.catalog;
     const [activeId, setActiveId] = React.useState(
@@ -291,6 +551,7 @@ export function createLearningComponents(React) {
               (s) =>
                 s.day === today &&
                 s.subject === subject &&
+                !s.archived &&
                 !s.finished &&
                 s.preferredId === (preferred || null),
             )
@@ -309,7 +570,8 @@ export function createLearningComponents(React) {
       ),
       [audioSaving, setAudioSaving] = React.useState(false);
     const readerRef = React.useRef(null),
-      questionRef = React.useRef(null);
+      questionRef = React.useRef(null),
+      lessonRef = React.useRef(null);
     if (!readerRef.current) readerRef.current = createSpeechReader();
     React.useEffect(
       () => setAutoRead(state.profile.autoReadQuestions !== false),
@@ -323,6 +585,21 @@ export function createLearningComponents(React) {
     const route = plan(subject, catalog, state),
       skill =
         catalog.skills.find((s) => s.id === preferred) || route.selected[0];
+    const example = React.useMemo(
+      () =>
+        subject === "thinking" && skill
+          ? makeItem(
+              { ...skill, catalogVersion: catalog.version },
+              "worked-example:" + catalog.version,
+              0,
+            )
+          : null,
+      [subject, skill?.id, catalog.version],
+    );
+    React.useEffect(() => {
+      if (!session)
+        lessonRef.current?.scrollIntoView({ block: "start", behavior: "auto" });
+    }, [preferred]);
     React.useEffect(() => {
       setValue("");
       setSupported(false);
@@ -338,9 +615,10 @@ export function createLearningComponents(React) {
     React.useEffect(() => {
       setAudioMessage("");
       setAudioStatus("idle");
-      if (item && autoRead) {
+      if ((item || (!session && example)) && autoRead) {
         const timer = setTimeout(() => {
-          if (result)
+          if (!item) readSegments(questionSpeech(example));
+          else if (result)
             readSegments([
               {
                 text:
@@ -357,7 +635,7 @@ export function createLearningComponents(React) {
         };
       }
       readerRef.current.stop();
-    }, [item?.id, activeId, result?.id, autoRead]);
+    }, [item?.id, activeId, result?.id, autoRead, example?.id]);
     React.useEffect(() => () => readerRef.current.stop(), []);
     async function act(action) {
       if (busy) return;
@@ -474,7 +752,7 @@ export function createLearningComponents(React) {
     if (!session)
       return h(
         "div",
-        null,
+        { className: "edu-lesson-overview", ref: lessonRef },
         h(
           Heading,
           { title: labels[subject] },
@@ -482,7 +760,7 @@ export function createLearningComponents(React) {
             "p",
             null,
             subject === "thinking"
-              ? "先动手、再说思路。遇到难题可以停下来，不计时、不排名。"
+              ? "先用例题理解方法，再做不同变式。可以画图、列举、假设验证，不要求背公式。"
               : subject === "english"
                 ? "先听懂、再回应，最后在生活里用一句。暂不要求拼写和背语法。"
                 : "看图、摆实物、讲原因，比一次刷很多题更有帮助。",
@@ -493,6 +771,12 @@ export function createLearningComponents(React) {
           { className: "edu-card edu-lesson" },
           h("small", null, preferred ? "自选主题" : route.reason),
           h("h3", null, skill.title),
+          skill.level &&
+            h(
+              "span",
+              { className: "edu-level-badge" },
+              `第${skill.level}层 · ${skill.levelTitle}`,
+            ),
           h("p", null, skill.goal),
           h(
             "div",
@@ -500,6 +784,33 @@ export function createLearningComponents(React) {
             h("b", null, "陪伴提示"),
             h("p", null, skill.coach),
           ),
+          example &&
+            h(
+              "section",
+              { className: "edu-worked-example" },
+              h("h4", null, "先看一道例题"),
+              h("p", null, example.prompt),
+              h(PuzzleDiagram, { diagram: example.diagram }),
+              btn("🔊 重播读题", () => readSegments(questionSpeech(example))),
+              h(
+                "details",
+                null,
+                h("summary", null, "先想一想，再看解题方法"),
+                h(
+                  "ol",
+                  null,
+                  ...(example.steps || [example.explanation]).map((step, i) =>
+                    h("li", { key: i }, step),
+                  ),
+                ),
+                btn("🔊 听解题方法", () => speak(example.explanation)),
+              ),
+              h(
+                "small",
+                null,
+                "例题只帮助理解方法，不计入学习证据，也不会原题出现在这一轮练习里。",
+              ),
+            ),
           subject === "english" &&
             h(
               React.Fragment,
@@ -545,6 +856,24 @@ export function createLearningComponents(React) {
           btn("看看其他主题", onBack),
         ),
         subject === "math" && h(Habits, { state, onComplete }),
+        subject === "math" &&
+          h(
+            "section",
+            { className: "edu-card" },
+            h("h3", null, "数学思维基础"),
+            h("p", null, "规律、简单排序等入门活动放在这里，按需要选做。"),
+            h(
+              "div",
+              { className: "edu-resource-grid" },
+              ...catalog.skills
+                .filter((s) => s.track === "foundation")
+                .map((s) =>
+                  btn(s.title.replace("思维基础 · ", ""), () => onChoose(s), {
+                    key: s.id,
+                  }),
+                ),
+            ),
+          ),
       );
     if (!item) {
       const answers = Object.values(session.answers),
@@ -569,6 +898,19 @@ export function createLearningComponents(React) {
             })
           : h("p", { role: "status" }, notice || "本次学习已保存"),
         subject === "thinking" && h(Interest, { session }),
+        subject === "thinking" &&
+          skill.level < 3 &&
+          independent.length === answers.length &&
+          answers.length >= 3 &&
+          answers.some((a) => a.explained) &&
+          btn("想再试试？挑战下一层（可选）", () =>
+            onChoose(
+              catalog.skills.find(
+                (s) =>
+                  s.topicId === skill.topicId && s.level === skill.level + 1,
+              ),
+            ),
+          ),
         btn("回到成长路线", onBack),
       );
     }
@@ -631,6 +973,7 @@ export function createLearningComponents(React) {
             { className: "edu-visual", "aria-label": "题目图示" },
             item.visual,
           ),
+        h(PuzzleDiagram, { diagram: item.diagram }),
         item.kind === "listening" &&
           btn(
             "🎧 播放英语声音",
@@ -900,7 +1243,10 @@ export function createLearningComponents(React) {
       }
     }
     const math = state.catalog.skills.filter(
-      (s) => s.subject === "math" && s.term <= profile.term,
+      (s) =>
+        s.subject === "math" &&
+        s.track !== "foundation" &&
+        s.term <= profile.term,
     );
     return h(
       "div",
@@ -1103,6 +1449,18 @@ export function createLearningComponents(React) {
       setPracticeSubject(null);
     }, [section]);
     if (!state.catalog) return h(Loading, { error });
+    async function choose(s) {
+      if (!s) return;
+      if (s.subject === "thinking") {
+        try {
+          await store.update((state) => {
+            state.profile.thinkingSkill = s.id;
+          });
+        } catch {}
+      }
+      setPreferred(s.id);
+      setPracticeSubject(s.subject);
+    }
     if (section === "learning-settings")
       return h(
         "div",
@@ -1117,12 +1475,16 @@ export function createLearningComponents(React) {
         h(StorageNotice),
         h(Roadmap, {
           state,
-          onPractice: (s) => {
-            setPreferred(s.id);
-            setPracticeSubject(s.subject);
-          },
+          onPractice: choose,
         }),
         h(Habits, { state, onComplete }),
+      );
+    if (section === "thinking" && !practiceSubject)
+      return h(
+        "div",
+        { className: "edu-page" },
+        h(StorageNotice),
+        h(ThinkingHub, { state, onPractice: choose, onNavigate }),
       );
     return h(
       "div",
@@ -1134,10 +1496,11 @@ export function createLearningComponents(React) {
         state,
         preferred,
         onComplete,
+        onChoose: choose,
         onBack: () => {
           setPracticeSubject(null);
           setPreferred(null);
-          onNavigate("roadmap");
+          onNavigate(section === "thinking" ? "thinking" : "roadmap");
         },
       }),
     );

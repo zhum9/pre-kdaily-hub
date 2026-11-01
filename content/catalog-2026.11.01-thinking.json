@@ -1,0 +1,1149 @@
+{
+  "schemaVersion": 1,
+  "version": "2026.11.01.2",
+  "checkedAt": "2026-11-01",
+  "review": {
+    "method": "来源交叉核对与规则校验",
+    "reviewer": "Codex",
+    "note": "新增一年级轻奥三层探索：以画图、枚举、等量与逐项验证为主。规则题为原创，数值与条件经过独立求解器检验；并非培训机构课程或教师逐题审定。"
+  },
+  "textbookNote": "家长已说明江苏凤凰教育出版社。出版信息不等于确认教材版次或单元顺序；本路线按知识主题组织，请按学校课本设置课堂进度。语文保留原模块，未宣称逐课匹配。",
+  "sources": [
+    {
+      "id": "moe-2022",
+      "title": "教育部：义务教育课程方案和课程标准（2022年版）",
+      "url": "https://www.moe.gov.cn/srcsite/A26/s8001/202204/t20220420_619921.html?fromColId=204",
+      "checkedAt": "2026-11-01",
+      "evidence": "检索核对通知和附件目录；部分教育部页面直接访问超时。"
+    },
+    {
+      "id": "moe-math",
+      "title": "义务教育数学课程标准（2022年版）",
+      "url": "https://www.moe.gov.cn/srcsite/A26/s8001/202204/W020220420582346895190.pdf",
+      "checkedAt": "2026-11-01",
+      "evidence": "检索核对第一学段内容；直接下载遇到重定向。按学段参考，不作为具体教材单元顺序。"
+    },
+    {
+      "id": "moe-transition",
+      "title": "教育部：幼儿园与小学科学衔接指导意见",
+      "url": "https://www.moe.gov.cn/srcsite/A06/s3327/202104/t20210408_525137.html",
+      "checkedAt": "2026-11-01",
+      "evidence": "检索核对入学适应、游戏化生活化学习建议。"
+    },
+    {
+      "id": "english-standard",
+      "title": "英语课程标准（2022年版）原文公开副本",
+      "url": "https://www.esph.com.cn/docs/2025-10/705da262a6e74b088ac658bfe2d757ba.pdf",
+      "checkedAt": "2026-11-01",
+      "evidence": "检索核对预备级视听说教学提示；直接下载超时。"
+    },
+    {
+      "id": "bc-home",
+      "title": "British Council：How to start teaching kids English at home",
+      "url": "https://learnenglishkids.britishcouncil.org/parents/helping-your-child/how-start-teaching-kids-english-home",
+      "checkedAt": "2026-11-01",
+      "evidence": "已打开全文，参考短时、多次、故事与生活情境建议。"
+    },
+    {
+      "id": "nrich-thinking",
+      "title": "剑桥 NRICH：Mathematical Problem Solving in the Early Years",
+      "url": "https://nrich.maths.org/articles/mathematical-problem-solving-early-years",
+      "checkedAt": "2026-11-01",
+      "evidence": "已打开原文，参考描述、记录、推理、延伸的提问框架。"
+    },
+    {
+      "id": "nrich-lthc",
+      "title": "剑桥 NRICH：小学低起点、多层拓展任务",
+      "url": "https://nrich.maths.org/low-threshold-high-ceiling-resources-primary-teachers",
+      "checkedAt": "2026-11-01",
+      "evidence": "检索核对5—7岁任务与低起点、可延伸的方法框架；仅参考设计原则，本项目题目为原创。"
+    }
+  ],
+  "skills": [
+    {
+      "id": "m-count5",
+      "title": "5以内：一个一个数",
+      "subject": "math",
+      "template": "count",
+      "order": 1,
+      "term": 1,
+      "max": 5,
+      "prerequisites": [],
+      "goal": "点数不遗漏，知道最后一个数表示总数。",
+      "coach": "拿5个以内的小物件，摸一个数一个，再换一个摆法数。",
+      "sources": [
+        "moe-math"
+      ]
+    },
+    {
+      "id": "m-count10",
+      "title": "10以内：数和数量",
+      "subject": "math",
+      "template": "count",
+      "order": 2,
+      "term": 1,
+      "max": 10,
+      "prerequisites": [
+        "m-count5"
+      ],
+      "goal": "能数出10以内物体，并把数量和数字对应。",
+      "coach": "数过的物品移到另一边。换个摆法，数量会改变吗？",
+      "sources": [
+        "moe-math"
+      ]
+    },
+    {
+      "id": "m-compare",
+      "title": "比多少与数的大小",
+      "subject": "math",
+      "template": "compare",
+      "order": 3,
+      "term": 1,
+      "max": 10,
+      "prerequisites": [
+        "m-count10"
+      ],
+      "goal": "用一一对应解释哪个多、哪个少。",
+      "coach": "用两排积木一一配对，不只看一排摆得长不长。",
+      "sources": [
+        "moe-math"
+      ]
+    },
+    {
+      "id": "m-compose",
+      "title": "10以内：分与合",
+      "subject": "math",
+      "template": "compose",
+      "order": 4,
+      "term": 1,
+      "max": 10,
+      "prerequisites": [
+        "m-count10"
+      ],
+      "goal": "能把一个整体分成两部分，并重新合起来。",
+      "coach": "摆小棒、盖住一部分，再说一说总数与两部分的关系。",
+      "sources": [
+        "moe-math"
+      ]
+    },
+    {
+      "id": "m-add10",
+      "title": "10以内加法：合起来",
+      "subject": "math",
+      "template": "add",
+      "order": 5,
+      "term": 1,
+      "max": 10,
+      "prerequisites": [
+        "m-compose"
+      ],
+      "goal": "理解加法是把两部分合起来，能用图或实物解释。",
+      "coach": "先摆出两部分，合起来；也可以从较大的数接着数。",
+      "sources": [
+        "moe-math"
+      ]
+    },
+    {
+      "id": "m-sub10",
+      "title": "10以内减法：剩多少",
+      "subject": "math",
+      "template": "subtract",
+      "order": 6,
+      "term": 1,
+      "max": 10,
+      "prerequisites": [
+        "m-add10"
+      ],
+      "goal": "理解拿走后的剩余，并用加法检验。",
+      "coach": "拿走几枚积木，解释算式中每个数表示什么。",
+      "sources": [
+        "moe-math"
+      ]
+    },
+    {
+      "id": "m-story",
+      "title": "生活中的加法问题",
+      "subject": "math",
+      "template": "story",
+      "order": 7,
+      "term": 1,
+      "max": 10,
+      "prerequisites": [
+        "m-add10"
+      ],
+      "goal": "读懂数量关系，选择运算并解释答案的单位。",
+      "coach": "先说发生了什么，再画出原来和新增加的两部分。",
+      "sources": [
+        "moe-math"
+      ]
+    },
+    {
+      "id": "m-missing",
+      "title": "藏起来的一部分",
+      "subject": "math",
+      "template": "missing",
+      "order": 8,
+      "term": 1,
+      "max": 10,
+      "prerequisites": [
+        "m-sub10"
+      ],
+      "goal": "理解整体与部分，能反向推想未知数。",
+      "coach": "摆出总数，盖住一部分；想“几加已知部分等于总数”。",
+      "sources": [
+        "moe-math"
+      ]
+    },
+    {
+      "id": "m-solid",
+      "title": "认识立体图形",
+      "subject": "math",
+      "template": "shape3d",
+      "order": 9,
+      "term": 1,
+      "prerequisites": [
+        "m-count10"
+      ],
+      "goal": "观察球、正方体、圆柱的特征，区分物体与平面图形。",
+      "coach": "找球、骰子、罐子，摸面、试滚动；图示只是帮助，实物观察更重要。",
+      "sources": [
+        "moe-math"
+      ]
+    },
+    {
+      "id": "m-tens20",
+      "title": "11—20：十和一",
+      "subject": "math",
+      "template": "tens",
+      "order": 10,
+      "term": 1,
+      "max": 20,
+      "prerequisites": [
+        "m-count10"
+      ],
+      "goal": "知道10个一组成1个十，解释十几的组成。",
+      "coach": "把10根小棒捆成一捆，旁边再放几根；先说十，再说一。",
+      "sources": [
+        "moe-math"
+      ]
+    },
+    {
+      "id": "m-carry",
+      "title": "20以内进位加法",
+      "subject": "math",
+      "template": "carry",
+      "order": 11,
+      "term": 1,
+      "max": 20,
+      "prerequisites": [
+        "m-compose",
+        "m-add10",
+        "m-tens20"
+      ],
+      "goal": "理解凑十的过程，能解释为什么这样拆数。",
+      "coach": "用十格框或小棒移动凑十，允许孩子用不同的正确算法。",
+      "sources": [
+        "moe-math"
+      ]
+    },
+    {
+      "id": "m-borrow",
+      "title": "下一步：20以内退位减法",
+      "subject": "math",
+      "template": "borrow",
+      "order": 12,
+      "term": 2,
+      "max": 20,
+      "prerequisites": [
+        "m-carry",
+        "m-sub10"
+      ],
+      "goal": "借助实物理解破十减或想加算减。",
+      "coach": "先操作再抽象，不把方法口诀当成唯一解法。",
+      "sources": [
+        "moe-math"
+      ]
+    },
+    {
+      "id": "m-tens100",
+      "title": "下一步：100以内十和一",
+      "subject": "math",
+      "template": "tens",
+      "order": 13,
+      "term": 2,
+      "max": 99,
+      "prerequisites": [
+        "m-tens20"
+      ],
+      "goal": "按十为单位计数，理解两位数的数位意义。",
+      "coach": "把10根捆成1捆，比较4捆和4根；不靠背数字推进。",
+      "sources": [
+        "moe-math"
+      ]
+    },
+    {
+      "id": "m-plane",
+      "title": "下一步：平面图形",
+      "subject": "math",
+      "template": "shape2d",
+      "order": 14,
+      "term": 2,
+      "prerequisites": [
+        "m-solid"
+      ],
+      "goal": "辨认平面图形，用边和角说明特点。",
+      "coach": "用立体物体描出平面图形；旋转纸片后再辨认。",
+      "sources": [
+        "moe-math"
+      ]
+    },
+    {
+      "id": "t-pattern",
+      "title": "思维基础 · 规律侦探",
+      "subject": "math",
+      "template": "pattern",
+      "order": 101,
+      "term": 1,
+      "prerequisites": [],
+      "goal": "找出重复单元，解释预测的依据。",
+      "coach": "先描述，再圈出重复的一组，最后自己创造一种规律。",
+      "sources": [
+        "nrich-thinking",
+        "moe-math"
+      ],
+      "track": "foundation"
+    },
+    {
+      "id": "t-rank",
+      "title": "思维基础 · 线索排排队",
+      "subject": "math",
+      "template": "rank",
+      "order": 102,
+      "term": 1,
+      "prerequisites": [],
+      "goal": "同时利用两条条件，摆卡片检查先后顺序。",
+      "coach": "允许反复移动卡片，问“这条线索也符合吗”。",
+      "sources": [
+        "nrich-thinking",
+        "moe-math"
+      ],
+      "track": "foundation"
+    },
+    {
+      "id": "t-enumerate",
+      "title": "思维基础 · 搭配不重不漏",
+      "subject": "math",
+      "template": "enumerate",
+      "order": 103,
+      "term": 1,
+      "prerequisites": [
+        "m-compose"
+      ],
+      "goal": "固定一项、有顺序地列举，培养系统思考。",
+      "coach": "用真实衣服或卡片连线；不要求会乘法，不追求快。",
+      "sources": [
+        "nrich-thinking",
+        "moe-math"
+      ],
+      "track": "foundation"
+    },
+    {
+      "id": "t-paths",
+      "title": "思维基础 · 有序数路线",
+      "subject": "math",
+      "template": "paths",
+      "order": 104,
+      "term": 1,
+      "prerequisites": [
+        "m-count10"
+      ],
+      "goal": "逐条记录路线，解释为什么没有重复或遗漏。",
+      "coach": "用手指沿箭头走，每记录一条就在纸上画一个记号。",
+      "sources": [
+        "nrich-thinking",
+        "moe-math"
+      ],
+      "track": "foundation"
+    },
+    {
+      "id": "t-balance",
+      "title": "思维基础 · 天平与等量替换",
+      "subject": "math",
+      "template": "balance",
+      "order": 105,
+      "term": 1,
+      "prerequisites": [
+        "m-compose"
+      ],
+      "goal": "把同样多的珠子分组，初步理解等量关系。",
+      "coach": "用同样重的积木和同样重的珠子操作；不要引入方程术语。",
+      "sources": [
+        "nrich-thinking",
+        "moe-math"
+      ],
+      "track": "foundation"
+    },
+    {
+      "id": "e-animals",
+      "title": "动物朋友：Hello!",
+      "subject": "english",
+      "template": "english",
+      "order": 1,
+      "term": 1,
+      "prerequisites": [],
+      "goal": "听懂词句并在情境中作出回应，愿意尝试表达。",
+      "coach": "先听并指认，再跟说，最后在真实生活里用一次。家长不会英语也可以播放语音、按中文步骤陪伴。",
+      "sources": [
+        "english-standard",
+        "bc-home"
+      ],
+      "words": [
+        {
+          "en": "cat",
+          "zh": "猫",
+          "picture": "🐱",
+          "cue": "Point to the cat."
+        },
+        {
+          "en": "dog",
+          "zh": "狗",
+          "picture": "🐶",
+          "cue": "Point to the dog."
+        },
+        {
+          "en": "bird",
+          "zh": "鸟",
+          "picture": "🐦",
+          "cue": "Point to the bird."
+        },
+        {
+          "en": "fish",
+          "zh": "鱼",
+          "picture": "🐟",
+          "cue": "Point to the fish."
+        }
+      ],
+      "dialogue": [
+        {
+          "en": "Hello!",
+          "zh": "你好！"
+        },
+        {
+          "en": "I see a cat.",
+          "zh": "我看到一只猫。"
+        },
+        {
+          "en": "Goodbye!",
+          "zh": "再见！"
+        }
+      ],
+      "activity": "拿出或画4张动物卡。先听词指图，再轮流说Hello，用玩偶互相打招呼。"
+    },
+    {
+      "id": "e-colours",
+      "title": "颜色寻宝：Find red",
+      "subject": "english",
+      "template": "english",
+      "order": 2,
+      "term": 1,
+      "prerequisites": [],
+      "goal": "听懂词句并在情境中作出回应，愿意尝试表达。",
+      "coach": "先听并指认，再跟说，最后在真实生活里用一次。家长不会英语也可以播放语音、按中文步骤陪伴。",
+      "sources": [
+        "english-standard",
+        "bc-home"
+      ],
+      "words": [
+        {
+          "en": "red",
+          "zh": "红色",
+          "picture": "🔴",
+          "cue": "Find something red."
+        },
+        {
+          "en": "blue",
+          "zh": "蓝色",
+          "picture": "🔵",
+          "cue": "Find something blue."
+        },
+        {
+          "en": "yellow",
+          "zh": "黄色",
+          "picture": "🟡",
+          "cue": "Find something yellow."
+        },
+        {
+          "en": "green",
+          "zh": "绿色",
+          "picture": "🟢",
+          "cue": "Find something green."
+        }
+      ],
+      "dialogue": [
+        {
+          "en": "What colour is it?",
+          "zh": "它是什么颜色？"
+        },
+        {
+          "en": "It is red.",
+          "zh": "它是红色。"
+        },
+        {
+          "en": "Find something blue.",
+          "zh": "找一个蓝色的东西。"
+        }
+      ],
+      "activity": "在房间里找3样不同颜色的物品，边找边说颜色。接受先指物、后开口。"
+    },
+    {
+      "id": "e-food",
+      "title": "点心时间：I like…",
+      "subject": "english",
+      "template": "english",
+      "order": 3,
+      "term": 1,
+      "prerequisites": [],
+      "goal": "听懂词句并在情境中作出回应，愿意尝试表达。",
+      "coach": "先听并指认，再跟说，最后在真实生活里用一次。家长不会英语也可以播放语音、按中文步骤陪伴。",
+      "sources": [
+        "english-standard",
+        "bc-home"
+      ],
+      "words": [
+        {
+          "en": "apple",
+          "zh": "苹果",
+          "picture": "🍎",
+          "cue": "Show me an apple."
+        },
+        {
+          "en": "banana",
+          "zh": "香蕉",
+          "picture": "🍌",
+          "cue": "Show me a banana."
+        },
+        {
+          "en": "milk",
+          "zh": "牛奶",
+          "picture": "🥛",
+          "cue": "Show me some milk."
+        },
+        {
+          "en": "bread",
+          "zh": "面包",
+          "picture": "🍞",
+          "cue": "Show me some bread."
+        }
+      ],
+      "dialogue": [
+        {
+          "en": "I like apples.",
+          "zh": "我喜欢苹果。"
+        },
+        {
+          "en": "Can I have some bread, please?",
+          "zh": "请给我一些面包，好吗？"
+        },
+        {
+          "en": "Here you are. Thank you!",
+          "zh": "给你。谢谢！"
+        }
+      ],
+      "activity": "用图片开一家小商店；孩子可以先指着想要的食物，再模仿礼貌请求。"
+    },
+    {
+      "id": "e-school",
+      "title": "我的学习用品",
+      "subject": "english",
+      "template": "english",
+      "order": 4,
+      "term": 1,
+      "prerequisites": [],
+      "goal": "听懂词句并在情境中作出回应，愿意尝试表达。",
+      "coach": "先听并指认，再跟说，最后在真实生活里用一次。家长不会英语也可以播放语音、按中文步骤陪伴。",
+      "sources": [
+        "english-standard",
+        "bc-home"
+      ],
+      "words": [
+        {
+          "en": "book",
+          "zh": "书",
+          "picture": "📕",
+          "cue": "Point to the book."
+        },
+        {
+          "en": "pencil",
+          "zh": "铅笔",
+          "picture": "✏️",
+          "cue": "Point to the pencil."
+        },
+        {
+          "en": "bag",
+          "zh": "书包",
+          "picture": "🎒",
+          "cue": "Point to the bag."
+        },
+        {
+          "en": "ruler",
+          "zh": "尺子",
+          "picture": "📏",
+          "cue": "Point to the ruler."
+        }
+      ],
+      "dialogue": [
+        {
+          "en": "This is my book.",
+          "zh": "这是我的书。"
+        },
+        {
+          "en": "Where is my bag?",
+          "zh": "我的书包在哪里？"
+        },
+        {
+          "en": "Here it is!",
+          "zh": "在这里！"
+        }
+      ],
+      "activity": "把学习用品藏在桌面不同位置，听到词后找出来；整理书包时再用一次。"
+    },
+    {
+      "id": "e-actions",
+      "title": "听指令，动起来",
+      "subject": "english",
+      "template": "english",
+      "order": 5,
+      "term": 1,
+      "prerequisites": [],
+      "goal": "听懂词句并在情境中作出回应，愿意尝试表达。",
+      "coach": "先听并指认，再跟说，最后在真实生活里用一次。家长不会英语也可以播放语音、按中文步骤陪伴。",
+      "sources": [
+        "english-standard",
+        "bc-home"
+      ],
+      "words": [
+        {
+          "en": "stand up",
+          "zh": "起立",
+          "picture": "🧍",
+          "cue": "Please stand up."
+        },
+        {
+          "en": "sit down",
+          "zh": "坐下",
+          "picture": "🪑",
+          "cue": "Please sit down."
+        },
+        {
+          "en": "clap",
+          "zh": "拍手",
+          "picture": "👏",
+          "cue": "Clap your hands."
+        },
+        {
+          "en": "jump",
+          "zh": "跳一跳",
+          "picture": "🤾",
+          "cue": "Jump, please."
+        }
+      ],
+      "dialogue": [
+        {
+          "en": "Stand up, please.",
+          "zh": "请起立。"
+        },
+        {
+          "en": "Clap your hands.",
+          "zh": "拍拍手。"
+        },
+        {
+          "en": "Sit down, please.",
+          "zh": "请坐下。"
+        }
+      ],
+      "activity": "离开屏幕做听指令游戏。家长先示范，孩子听懂后做动作，再轮流发指令。"
+    },
+    {
+      "id": "o-interval-1",
+      "subject": "thinking",
+      "template": "interval",
+      "order": 1,
+      "term": 1,
+      "max": 20,
+      "topicId": "interval",
+      "topicTitle": "间隔与排队",
+      "icon": "🌳",
+      "level": 1,
+      "levelTitle": "起步",
+      "title": "间隔与排队 · 直线上的树与间隔",
+      "goal": "用画图辨别物体数量和间隔数量。",
+      "coach": "先让孩子摆一摆、画一画或列个表，再讲为什么。已经理解可以直接选下一层，不必重复刷基础题。",
+      "prerequisites": [
+        "m-add10"
+      ],
+      "sources": [
+        "moe-math",
+        "nrich-lthc"
+      ]
+    },
+    {
+      "id": "o-interval-2",
+      "subject": "thinking",
+      "template": "interval",
+      "order": 2,
+      "term": 1,
+      "max": 20,
+      "topicId": "interval",
+      "topicTitle": "间隔与排队",
+      "icon": "🌳",
+      "level": 2,
+      "levelTitle": "进阶",
+      "title": "间隔与排队 · 端点变化与首尾相接",
+      "goal": "比较两端都放、只放一端、两端不放和围成圈的差别。",
+      "coach": "先让孩子摆一摆、画一画或列个表，再讲为什么。已经理解可以直接选下一层，不必重复刷基础题。",
+      "prerequisites": [
+        "o-interval-1"
+      ],
+      "sources": [
+        "moe-math",
+        "nrich-lthc"
+      ]
+    },
+    {
+      "id": "o-interval-3",
+      "subject": "thinking",
+      "template": "interval",
+      "order": 3,
+      "term": 1,
+      "max": 20,
+      "topicId": "interval",
+      "topicTitle": "间隔与排队",
+      "icon": "🌳",
+      "level": 3,
+      "levelTitle": "挑战",
+      "title": "间隔与排队 · 分段计算与连接点去重",
+      "goal": "分段数位置，发现并去掉连接点的重复。",
+      "coach": "先让孩子摆一摆、画一画或列个表，再讲为什么。这是可选挑战，卡住可以听提示或退回上一层，不要求学会方程和公式。",
+      "prerequisites": [
+        "o-interval-2"
+      ],
+      "sources": [
+        "moe-math",
+        "nrich-lthc"
+      ]
+    },
+    {
+      "id": "o-redistribute-1",
+      "subject": "thinking",
+      "template": "redistribute",
+      "order": 4,
+      "term": 1,
+      "max": 20,
+      "topicId": "redistribute",
+      "topicTitle": "移多补少",
+      "icon": "⚖️",
+      "level": 1,
+      "levelTitle": "起步",
+      "title": "移多补少 · 移动一份，差变多少",
+      "goal": "通过实际移动理解差同时缩小两份。",
+      "coach": "先让孩子摆一摆、画一画或列个表，再讲为什么。已经理解可以直接选下一层，不必重复刷基础题。",
+      "prerequisites": [
+        "m-sub10"
+      ],
+      "sources": [
+        "moe-math",
+        "nrich-lthc"
+      ]
+    },
+    {
+      "id": "o-redistribute-2",
+      "subject": "thinking",
+      "template": "redistribute",
+      "order": 5,
+      "term": 1,
+      "max": 20,
+      "topicId": "redistribute",
+      "topicTitle": "移多补少",
+      "icon": "⚖️",
+      "level": 2,
+      "levelTitle": "进阶",
+      "title": "移多补少 · 保留差与倒推原来的差",
+      "goal": "同时考虑移动量、原来的差和最后的差。",
+      "coach": "先让孩子摆一摆、画一画或列个表，再讲为什么。已经理解可以直接选下一层，不必重复刷基础题。",
+      "prerequisites": [
+        "o-redistribute-1"
+      ],
+      "sources": [
+        "moe-math",
+        "nrich-lthc"
+      ]
+    },
+    {
+      "id": "o-redistribute-3",
+      "subject": "thinking",
+      "template": "redistribute",
+      "order": 6,
+      "term": 1,
+      "max": 20,
+      "topicId": "redistribute",
+      "topicTitle": "移多补少",
+      "icon": "⚖️",
+      "level": 3,
+      "levelTitle": "挑战",
+      "title": "移多补少 · 三份之间的最少移动",
+      "goal": "先确定三份相同的目标，再分别补缺。",
+      "coach": "先让孩子摆一摆、画一画或列个表，再讲为什么。这是可选挑战，卡住可以听提示或退回上一层，不要求学会方程和公式。",
+      "prerequisites": [
+        "o-redistribute-2"
+      ],
+      "sources": [
+        "moe-math",
+        "nrich-lthc"
+      ]
+    },
+    {
+      "id": "o-sumdiff-1",
+      "subject": "thinking",
+      "template": "sumdiff",
+      "order": 7,
+      "term": 1,
+      "max": 20,
+      "topicId": "sumdiff",
+      "topicTitle": "和差画图",
+      "icon": "📏",
+      "level": 1,
+      "levelTitle": "起步",
+      "title": "和差画图 · 两份的和与差",
+      "goal": "用线段图去掉多出的一段，得到相同的两份。",
+      "coach": "先让孩子摆一摆、画一画或列个表，再讲为什么。已经理解可以直接选下一层，不必重复刷基础题。",
+      "prerequisites": [
+        "m-compose",
+        "m-sub10"
+      ],
+      "sources": [
+        "moe-math",
+        "nrich-lthc"
+      ]
+    },
+    {
+      "id": "o-sumdiff-2",
+      "subject": "thinking",
+      "template": "sumdiff",
+      "order": 8,
+      "term": 1,
+      "max": 20,
+      "topicId": "sumdiff",
+      "topicTitle": "和差画图",
+      "icon": "📏",
+      "level": 2,
+      "levelTitle": "进阶",
+      "title": "和差画图 · 移动、用掉之后倒推",
+      "goal": "先恢复原来的总数或差，再画图分份。",
+      "coach": "先让孩子摆一摆、画一画或列个表，再讲为什么。已经理解可以直接选下一层，不必重复刷基础题。",
+      "prerequisites": [
+        "o-sumdiff-1"
+      ],
+      "sources": [
+        "moe-math",
+        "nrich-lthc"
+      ]
+    },
+    {
+      "id": "o-sumdiff-3",
+      "subject": "thinking",
+      "template": "sumdiff",
+      "order": 9,
+      "term": 1,
+      "max": 20,
+      "topicId": "sumdiff",
+      "topicTitle": "和差画图",
+      "icon": "📏",
+      "level": 3,
+      "levelTitle": "挑战",
+      "title": "和差画图 · 三份数量关系",
+      "goal": "把三份统一成同样长，再处理各自多出的部分。",
+      "coach": "先让孩子摆一摆、画一画或列个表，再讲为什么。这是可选挑战，卡住可以听提示或退回上一层，不要求学会方程和公式。",
+      "prerequisites": [
+        "o-sumdiff-2"
+      ],
+      "sources": [
+        "moe-math",
+        "nrich-lthc"
+      ]
+    },
+    {
+      "id": "o-replacement-1",
+      "subject": "thinking",
+      "template": "replacement",
+      "order": 10,
+      "term": 1,
+      "max": 20,
+      "topicId": "replacement",
+      "topicTitle": "等量代换",
+      "icon": "🍎",
+      "level": 1,
+      "levelTitle": "起步",
+      "title": "等量代换 · 一层一层替换",
+      "goal": "把一个物品替换为同样重的一组物品。",
+      "coach": "先让孩子摆一摆、画一画或列个表，再讲为什么。已经理解可以直接选下一层，不必重复刷基础题。",
+      "prerequisites": [
+        "m-compose"
+      ],
+      "sources": [
+        "moe-math",
+        "nrich-lthc"
+      ]
+    },
+    {
+      "id": "o-replacement-2",
+      "subject": "thinking",
+      "template": "replacement",
+      "order": 11,
+      "term": 1,
+      "max": 20,
+      "topicId": "replacement",
+      "topicTitle": "等量代换",
+      "icon": "🍎",
+      "level": 2,
+      "levelTitle": "进阶",
+      "title": "等量代换 · 比较两组，消去共同部分",
+      "goal": "从两次称重中找出相同与不同，确定未知量。",
+      "coach": "先让孩子摆一摆、画一画或列个表，再讲为什么。已经理解可以直接选下一层，不必重复刷基础题。",
+      "prerequisites": [
+        "o-replacement-1"
+      ],
+      "sources": [
+        "moe-math",
+        "nrich-lthc"
+      ]
+    },
+    {
+      "id": "o-replacement-3",
+      "subject": "thinking",
+      "template": "replacement",
+      "order": 12,
+      "term": 1,
+      "max": 20,
+      "topicId": "replacement",
+      "topicTitle": "等量代换",
+      "icon": "🍎",
+      "level": 3,
+      "levelTitle": "挑战",
+      "title": "等量代换 · 把几组放在一起看整体",
+      "goal": "合并两组，再按相同的组合分组；不必分别求每一种。",
+      "coach": "先让孩子摆一摆、画一画或列个表，再讲为什么。这是可选挑战，卡住可以听提示或退回上一层，不要求学会方程和公式。",
+      "prerequisites": [
+        "o-replacement-2"
+      ],
+      "sources": [
+        "moe-math",
+        "nrich-lthc"
+      ]
+    },
+    {
+      "id": "o-restricted-enumeration-1",
+      "subject": "thinking",
+      "template": "restricted-enumeration",
+      "order": 13,
+      "term": 1,
+      "max": 20,
+      "topicId": "restricted-enumeration",
+      "topicTitle": "有条件枚举",
+      "icon": "🪙",
+      "level": 1,
+      "levelTitle": "起步",
+      "title": "有条件枚举 · 固定一种，有序列举",
+      "goal": "按一种代币从少到多列出全部凑法。",
+      "coach": "先让孩子摆一摆、画一画或列个表，再讲为什么。已经理解可以直接选下一层，不必重复刷基础题。",
+      "prerequisites": [
+        "m-add10"
+      ],
+      "sources": [
+        "moe-math",
+        "nrich-lthc"
+      ]
+    },
+    {
+      "id": "o-restricted-enumeration-2",
+      "subject": "thinking",
+      "template": "restricted-enumeration",
+      "order": 14,
+      "term": 1,
+      "max": 20,
+      "topicId": "restricted-enumeration",
+      "topicTitle": "有条件枚举",
+      "icon": "🪙",
+      "level": 2,
+      "levelTitle": "进阶",
+      "title": "有条件枚举 · 加入数量上限，筛掉不合条件的",
+      "goal": "枚举时同时检查钱数和每种代币的上限。",
+      "coach": "先让孩子摆一摆、画一画或列个表，再讲为什么。已经理解可以直接选下一层，不必重复刷基础题。",
+      "prerequisites": [
+        "o-restricted-enumeration-1"
+      ],
+      "sources": [
+        "moe-math",
+        "nrich-lthc"
+      ]
+    },
+    {
+      "id": "o-restricted-enumeration-3",
+      "subject": "thinking",
+      "template": "restricted-enumeration",
+      "order": 15,
+      "term": 1,
+      "max": 20,
+      "topicId": "restricted-enumeration",
+      "topicTitle": "有条件枚举",
+      "icon": "🪙",
+      "level": 3,
+      "levelTitle": "挑战",
+      "title": "有条件枚举 · 总数与总枚数同时满足",
+      "goal": "用表格同时核对总值和总枚数，做到不重不漏。",
+      "coach": "先让孩子摆一摆、画一画或列个表，再讲为什么。这是可选挑战，卡住可以听提示或退回上一层，不要求学会方程和公式。",
+      "prerequisites": [
+        "o-restricted-enumeration-2"
+      ],
+      "sources": [
+        "moe-math",
+        "nrich-lthc"
+      ]
+    },
+    {
+      "id": "o-grid-routes-1",
+      "subject": "thinking",
+      "template": "grid-routes",
+      "order": 16,
+      "term": 1,
+      "max": 20,
+      "topicId": "grid-routes",
+      "topicTitle": "网格路线",
+      "icon": "🧭",
+      "level": 1,
+      "levelTitle": "起步",
+      "title": "网格路线 · 按第一步分组数路线",
+      "goal": "沿向右、向下的路线分组记录。",
+      "coach": "先让孩子摆一摆、画一画或列个表，再讲为什么。已经理解可以直接选下一层，不必重复刷基础题。",
+      "prerequisites": [
+        "m-count10"
+      ],
+      "sources": [
+        "moe-math",
+        "nrich-lthc"
+      ]
+    },
+    {
+      "id": "o-grid-routes-2",
+      "subject": "thinking",
+      "template": "grid-routes",
+      "order": 17,
+      "term": 1,
+      "max": 20,
+      "topicId": "grid-routes",
+      "topicTitle": "网格路线",
+      "icon": "🧭",
+      "level": 2,
+      "levelTitle": "进阶",
+      "title": "网格路线 · 必须经过中间点",
+      "goal": "把路线分成前后两段，配对组合。",
+      "coach": "先让孩子摆一摆、画一画或列个表，再讲为什么。已经理解可以直接选下一层，不必重复刷基础题。",
+      "prerequisites": [
+        "o-grid-routes-1"
+      ],
+      "sources": [
+        "moe-math",
+        "nrich-lthc"
+      ]
+    },
+    {
+      "id": "o-grid-routes-3",
+      "subject": "thinking",
+      "template": "grid-routes",
+      "order": 18,
+      "term": 1,
+      "max": 20,
+      "topicId": "grid-routes",
+      "topicTitle": "网格路线",
+      "icon": "🧭",
+      "level": 3,
+      "levelTitle": "挑战",
+      "title": "网格路线 · 避开交点，比较全部与不合条件",
+      "goal": "从全部路线中排除经过障碍的，或直接画出合法路线。",
+      "coach": "先让孩子摆一摆、画一画或列个表，再讲为什么。这是可选挑战，卡住可以听提示或退回上一层，不要求学会方程和公式。",
+      "prerequisites": [
+        "o-grid-routes-2"
+      ],
+      "sources": [
+        "moe-math",
+        "nrich-lthc"
+      ]
+    },
+    {
+      "id": "o-logic-matching-1",
+      "subject": "thinking",
+      "template": "logic-matching",
+      "order": 19,
+      "term": 1,
+      "max": 20,
+      "topicId": "logic-matching",
+      "topicTitle": "排除与逻辑",
+      "icon": "🔎",
+      "level": 1,
+      "levelTitle": "起步",
+      "title": "排除与逻辑 · 三个角色逐项排除",
+      "goal": "用已经确定和不能匹配的条件逐步排除。",
+      "coach": "先让孩子摆一摆、画一画或列个表，再讲为什么。已经理解可以直接选下一层，不必重复刷基础题。",
+      "prerequisites": [],
+      "sources": [
+        "moe-math",
+        "nrich-lthc"
+      ]
+    },
+    {
+      "id": "o-logic-matching-2",
+      "subject": "thinking",
+      "template": "logic-matching",
+      "order": 20,
+      "term": 1,
+      "max": 20,
+      "topicId": "logic-matching",
+      "topicTitle": "排除与逻辑",
+      "icon": "🔎",
+      "level": 2,
+      "levelTitle": "进阶",
+      "title": "排除与逻辑 · 四个角色、多条条件联动",
+      "goal": "画对应表，把多个条件联合起来推断。",
+      "coach": "先让孩子摆一摆、画一画或列个表，再讲为什么。已经理解可以直接选下一层，不必重复刷基础题。",
+      "prerequisites": [
+        "o-logic-matching-1"
+      ],
+      "sources": [
+        "moe-math",
+        "nrich-lthc"
+      ]
+    },
+    {
+      "id": "o-logic-matching-3",
+      "subject": "thinking",
+      "template": "logic-matching",
+      "order": 21,
+      "term": 1,
+      "max": 20,
+      "topicId": "logic-matching",
+      "topicTitle": "排除与逻辑",
+      "icon": "🔎",
+      "level": 3,
+      "levelTitle": "挑战",
+      "title": "排除与逻辑 · 假设验证：几句话符合实际",
+      "goal": "逐个假设位置，核对每句话并统计，找唯一符合的假设。",
+      "coach": "先让孩子摆一摆、画一画或列个表，再讲为什么。这是可选挑战，卡住可以听提示或退回上一层，不要求学会方程和公式。",
+      "prerequisites": [
+        "o-logic-matching-2"
+      ],
+      "sources": [
+        "moe-math",
+        "nrich-lthc"
+      ]
+    }
+  ]
+}

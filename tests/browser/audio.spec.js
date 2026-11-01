@@ -111,7 +111,7 @@ test("English automatic narration completes Chinese before English and question 
   await page.getByRole("button", { name: "提交答案" }).click();
   await expect(page.locator(".edu-feedback")).toBeVisible();
   const attempt = await page.evaluate(async () => {
-    const s = await import("/learning/store.js?v=29");
+    const s = await import("/learning/store.js?v=30");
     return s.getSnapshot().attempts[0];
   });
   expect(attempt.hintUsed).toBe(false);
