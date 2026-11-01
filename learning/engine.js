@@ -29,6 +29,7 @@ export const DEFAULT_PROFILE = {
   englishStage: "启蒙，尚未开课",
   preview: false,
   dailyMinutes: 20,
+  autoReadQuestions: true,
 };
 export function localDay(date = new Date()) {
   return new Intl.DateTimeFormat("en-CA", {

@@ -5,8 +5,14 @@ import {
   plan,
   makeSession,
   isCorrect,
-} from "./engine.js";
-import * as store from "./store.js";
+} from "./engine.js?v=29";
+import * as store from "./store.js?v=29";
+import {
+  createSpeechReader,
+  questionSpeech,
+  spokenText,
+  speechErrorMessage,
+} from "./audio.js?v=29";
 const labels = {
     math: "数学小课堂",
     english: "英语启蒙",
@@ -295,7 +301,20 @@ export function createLearningComponents(React) {
       [explained, setExplained] = React.useState(false),
       [heard, setHeard] = React.useState(false),
       [notice, setNotice] = React.useState(""),
-      [busy, setBusy] = React.useState(false);
+      [busy, setBusy] = React.useState(false),
+      [audioStatus, setAudioStatus] = React.useState("idle"),
+      [audioMessage, setAudioMessage] = React.useState(""),
+      [autoRead, setAutoRead] = React.useState(
+        state.profile.autoReadQuestions !== false,
+      ),
+      [audioSaving, setAudioSaving] = React.useState(false);
+    const readerRef = React.useRef(null),
+      questionRef = React.useRef(null);
+    if (!readerRef.current) readerRef.current = createSpeechReader();
+    React.useEffect(
+      () => setAutoRead(state.profile.autoReadQuestions !== false),
+      [state.profile.autoReadQuestions],
+    );
     const session = state.sessions[activeId],
       cursor = session?.cursor || 0,
       item = session?.items[cursor],
@@ -310,13 +329,36 @@ export function createLearningComponents(React) {
       setExplained(false);
       setHeard(false);
       setNotice("");
+      if (item)
+        questionRef.current?.scrollIntoView({
+          block: "start",
+          behavior: "auto",
+        });
     }, [item?.id, activeId]);
-    React.useEffect(
-      () => () => {
-        globalThis.speechSynthesis?.cancel();
-      },
-      [],
-    );
+    React.useEffect(() => {
+      setAudioMessage("");
+      setAudioStatus("idle");
+      if (item && autoRead) {
+        const timer = setTimeout(() => {
+          if (result)
+            readSegments([
+              {
+                text:
+                  (result.correct ? "答对了。" : "我们一起看看思路。") +
+                  spokenText(item.explanation),
+                lang: "zh-CN",
+              },
+            ]);
+          else readQuestion();
+        }, 100);
+        return () => {
+          clearTimeout(timer);
+          readerRef.current.stop();
+        };
+      }
+      readerRef.current.stop();
+    }, [item?.id, activeId, result?.id, autoRead]);
+    React.useEffect(() => () => readerRef.current.stop(), []);
     async function act(action) {
       if (busy) return;
       setBusy(true);
@@ -328,34 +370,38 @@ export function createLearningComponents(React) {
         setBusy(false);
       }
     }
+    function readSegments(segments) {
+      setAudioMessage("");
+      return readerRef.current.read(segments, {
+        onStatus: setAudioStatus,
+        onError: (code) => setAudioMessage(speechErrorMessage(code)),
+        onSegmentEnd: (segment) => {
+          if (segment.purpose === "listening") setHeard(true);
+        },
+      });
+    }
+    function readQuestion() {
+      return readSegments(questionSpeech(item));
+    }
+    async function changeAutoRead(checked) {
+      const previous = autoRead;
+      setAutoRead(checked);
+      setAudioSaving(true);
+      try {
+        await store.update((s) => {
+          s.profile.autoReadQuestions = checked;
+        });
+      } catch (error) {
+        setAutoRead(previous);
+        setNotice(error.message);
+      } finally {
+        setAudioSaving(false);
+      }
+    }
     function speak(text, lang = "zh-CN") {
-      if (!("speechSynthesis" in window)) {
-        setNotice("设备不支持朗读，请由家长陪伴示范，并勾选“陪伴练习”。");
-        return false;
-      }
-      const synth = window.speechSynthesis,
-        voice = synth
-          .getVoices()
-          .find((v) =>
-            v.lang.toLowerCase().startsWith(lang === "en-US" ? "en" : "zh"),
-          );
-      if (lang === "en-US" && !voice) {
-        setNotice(
-          "尚未加载英语声音，请稍后再试；也可由家长示范，记为陪伴练习。",
-        );
-        return false;
-      }
-      synth.cancel();
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = lang;
-      utterance.rate = lang === "en-US" ? 0.75 : 0.85;
-      if (voice) utterance.voice = voice;
-      utterance.onerror = () => {
-        setHeard(false);
-        setNotice("朗读未完成，可重试或使用陪伴练习。");
-      };
-      synth.speak(utterance);
-      return true;
+      return readSegments([
+        { text: lang === "zh-CN" ? spokenText(text) : text, lang },
+      ]);
     }
     const start = () =>
       act(async () => {
@@ -495,7 +541,7 @@ export function createLearningComponents(React) {
             className: "edu-primary",
             disabled: busy,
           }),
-          h("p", { role: "status" }, notice),
+          h("p", { role: "status" }, notice || audioMessage),
           btn("看看其他主题", onBack),
         ),
         subject === "math" && h(Habits, { state, onComplete }),
@@ -539,12 +585,44 @@ export function createLearningComponents(React) {
       ),
       h(
         "article",
-        { className: "edu-card edu-question" },
+        { className: "edu-card edu-question", ref: questionRef },
         h(
           "div",
           { className: "edu-question-top" },
           h("span", null, item.transfer ? "换个情境试一试" : "理解与练习"),
-          btn("🔊 听题", () => speak(item.prompt)),
+          btn("🔊 重播读题", readQuestion),
+        ),
+        h(
+          "div",
+          { className: "edu-audio-bar" },
+          h(
+            "label",
+            null,
+            h("input", {
+              type: "checkbox",
+              checked: autoRead,
+              disabled: audioSaving,
+              onChange: (e) => changeAutoRead(e.target.checked),
+            }),
+            "每题自动读",
+          ),
+          h(
+            "span",
+            { role: "status", "aria-live": "polite" },
+            audioMessage ||
+              (audioStatus === "speaking"
+                ? "正在读题…"
+                : audioStatus === "loading"
+                  ? "正在准备声音…"
+                  : autoRead
+                    ? "进入下一题会自动播报"
+                    : "已关闭自动播报，可以点重播读题"),
+          ),
+          ["speaking", "loading"].includes(audioStatus) &&
+            btn("停止朗读", () => {
+              readerRef.current.stop();
+              setAudioStatus("idle");
+            }),
         ),
         h("h3", null, item.prompt),
         item.visual &&
@@ -554,9 +632,16 @@ export function createLearningComponents(React) {
             item.visual,
           ),
         item.kind === "listening" &&
-          btn("🎧 播放英语声音", () => setHeard(speak(item.listen, "en-US")), {
-            className: "edu-listen",
-          }),
+          btn(
+            "🎧 播放英语声音",
+            () =>
+              readSegments([
+                { text: item.listen, lang: "en-US", purpose: "listening" },
+              ]),
+            {
+              className: "edu-listen",
+            },
+          ),
         item.choices
           ? h(
               "div",
@@ -576,7 +661,12 @@ export function createLearningComponents(React) {
                         result &&
                           h("small", null, choice.en + " · " + choice.zh),
                       )
-                    : choice,
+                    : h(
+                        React.Fragment,
+                        null,
+                        h("small", { className: "edu-choice-number" }, i + 1),
+                        choice,
+                      ),
                   () => setValue(val),
                   {
                     key: val,
@@ -639,11 +729,12 @@ export function createLearningComponents(React) {
             "div",
             { className: "edu-actions" },
             btn("给我一点提示", () =>
-              act(() =>
-                store.update((s) => {
+              act(async () => {
+                await store.update((s) => {
                   s.sessions[session.id].hints[item.id] = true;
-                }),
-              ),
+                });
+                if (autoRead) speak("一点提示。" + item.hint);
+              }),
             ),
             btn("提交答案", submit, {
               className: "edu-primary",
@@ -898,6 +989,17 @@ export function createLearningComponents(React) {
               setProfile({ ...profile, preview: e.target.checked }),
           }),
           "愿意尝试下学期内容（仍需满足每个主题的前置掌握证据）",
+        ),
+        h(
+          "label",
+          null,
+          h("input", {
+            type: "checkbox",
+            checked: profile.autoReadQuestions !== false,
+            onChange: (e) =>
+              setProfile({ ...profile, autoReadQuestions: e.target.checked }),
+          }),
+          "每道题自动语音播报（包含提示与提交后的讲解）",
         ),
         btn("保存学习设置", save, { className: "edu-primary" }),
       ),
