@@ -1,13 +1,14 @@
-const CACHE = "mario-growth-island-v28";
+const CACHE = "mario-growth-island-v29";
 const CORE = [
   "/",
   "/index.html",
-  "/app.js?v=28",
-  "/app.css?v=28",
-  "/learning/style.css?v=28",
-  "/learning/view.js",
-  "/learning/engine.js",
-  "/learning/store.js",
+  "/app.js?v=29",
+  "/app.css?v=29",
+  "/learning/style.css?v=29",
+  "/learning/view.js?v=29",
+  "/learning/engine.js?v=29",
+  "/learning/store.js?v=29",
+  "/learning/audio.js?v=29",
   "/content/manifest.json",
   "/content/catalog-2026.11.01.json",
   "/manifest.webmanifest",

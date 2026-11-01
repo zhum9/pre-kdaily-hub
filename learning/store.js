@@ -1,4 +1,4 @@
-import { DEFAULT_PROFILE, validateCatalog } from "./engine.js";
+import { DEFAULT_PROFILE, validateCatalog } from "./engine.js?v=29";
 export const BACKUP_FORMAT = "mario-learning-backup";
 const fresh = () => ({
   schemaVersion: 1,

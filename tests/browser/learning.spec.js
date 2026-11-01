@@ -37,7 +37,7 @@ test("legacy rewards persist; maths evidence, hints and sessions survive reload"
   await openPage(page, "数学小课堂");
   await expect(page.getByText("我们一起看看思路")).toBeVisible();
   const data = await page.evaluate(async () => {
-    const m = await import("/learning/store.js");
+    const m = await import("/learning/store.js?v=29");
     await m.initialize();
     return {
       attempts: m.getSnapshot().attempts,
@@ -125,7 +125,7 @@ test("backups restore settings to a fresh device, merge without duplicate eviden
   await page.goto("/");
   await expect(page.getByText("今天，走好自己的这一小步")).toBeVisible();
   const backup = await page.evaluate(async () => {
-    const s = await import("/learning/store.js");
+    const s = await import("/learning/store.js?v=29");
     await s.update((state) => {
       state.profile.edition = "家庭核对版";
       state.profile.configuredAt = "2026-11-01T00:00:00Z";
@@ -138,7 +138,7 @@ test("backups restore settings to a fresh device, merge without duplicate eviden
   await second.goto("/");
   await expect(second.getByText("今天，走好自己的这一小步")).toBeVisible();
   const merged = await second.evaluate(async (data) => {
-    const s = await import("/learning/store.js");
+    const s = await import("/learning/store.js?v=29");
     await s.importBackup(data);
     await s.importBackup(data);
     return s.getSnapshot();
@@ -146,7 +146,7 @@ test("backups restore settings to a fresh device, merge without duplicate eviden
   expect(merged.profile.edition).toBe("家庭核对版");
   expect(merged.habits["2026-11-01"].prepare).toBe(true);
   const preserved = await second.evaluate(async (data) => {
-    const s = await import("/learning/store.js");
+    const s = await import("/learning/store.js?v=29");
     await s.update((state) => {
       state.profile.edition = "本机已核对";
       state.profile.configuredAt = "2026-11-01T01:00:00Z";
@@ -163,7 +163,7 @@ test("tampered curriculum is rejected and last known content stays usable", asyn
   await page.goto("/");
   await expect(page.getByText("今天，走好自己的这一小步")).toBeVisible();
   const result = await page.evaluate(async () => {
-    const s = await import("/learning/store.js");
+    const s = await import("/learning/store.js?v=29");
     const before = s.getSnapshot().catalog.version;
     const outcome = await s.refreshCatalog(async (url) =>
       url.includes("manifest")

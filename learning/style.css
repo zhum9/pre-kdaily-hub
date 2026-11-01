@@ -239,6 +239,7 @@
 }
 .edu-question {
   max-width: 900px;
+  scroll-margin-top: 140px;
 }
 .edu-question h3 {
   font-size: 24px;
@@ -253,6 +254,46 @@
   gap: 10px;
   color: #739083;
   font-size: 12px;
+}
+.edu-audio-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  background: #f1f8f5;
+  border-radius: 12px;
+  padding: 13px 15px;
+  margin-top: 14px;
+  color: #5c7d71;
+  font-size: 12px;
+  line-height: 1.8;
+}
+.edu-audio-bar label {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  white-space: nowrap;
+  font-weight: 700;
+}
+.edu-audio-bar > span {
+  flex: 1;
+  min-width: 150px;
+}
+.edu-audio-bar button {
+  padding: 7px 12px;
+  font-size: 11px;
+}
+.edu-choices .edu-choice-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #eaf2f6;
+  color: #65818b;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  margin: 0 8px 0 0;
+  font-size: 11px;
 }
 .edu-visual {
   font-size: 23px;
